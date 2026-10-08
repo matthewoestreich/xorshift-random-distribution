@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>XorShift128+ Random Distribution</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous"
+    />
+  </head>
+  <body>
+    <div class="container py-4">
+      <header class="row mb-4 text-center">
+        <div class="col-12">
+          <h1 class="display-5">XorShift128+ Random Distribution</h1>
+        </div>
+      </header>
+
+      <div class="row g-4">
+        <main class="col-lg-8">
+          <h2>The Implementation</h2>
+          <p>
+            We use an exact clone of the <code>Math.random</code> implementation
+            used by Chrome
+            <code>v154.0.8037.98 (Official Build) (x86_64)</code>. You can find
+            the source code of our implementation
+            <a
+              href="./chrome-math-random.js"
+              target="_blank"
+              rel="noopener noreferrer"
+              >here</a
+            >.
+          </p>
+          <div class="pt-4">
+            <h2>Options</h2>
+            <form id="options-form" class="row g-3 needs-validation" novalidate>
+              <p class="pt-2 my-1">
+                You can seed the implementation with any number you like.
+              </p>
+              <div class="form-floating mt-0">
+                <input
+                  id="seed"
+                  type="number"
+                  class="form-control"
+                  placeholder="Seed"
+                  required
+                />
+                <label for="seed">Seed</label>
+                <div class="invalid-feedback">Seed must be a number.</div>
+              </div>
+              <p class="pt-2 my-1">
+                How many numbers should we generate (up to 2,000,000)?
+              </p>
+              <div class="form-floating mt-0">
+                <input
+                  id="pool-size"
+                  type="number"
+                  name="randoms-count"
+                  min="0"
+                  max="2000000"
+                  class="form-control"
+                  placeholder="Count"
+                  required
+                />
+                <label for="randoms-count">Count</label>
+                <div class="invalid-feedback">Count must be a number.</div>
+              </div>
+            </form>
+            <div id="result-container" hidden class="pt-4">
+              <h2>Random Distribution</h2>
+              <div id="result"></div>
+            </div>
+            <div class="pt-4">
+              <button
+                id="generate-rands"
+                type="submit"
+                form="options-form"
+                class="btn btn-primary"
+              >
+                Generate Random Numbers
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+      crossorigin="anonymous"
+    ></script>
+    <script src="./chrome-math-random.js"></script>
+    <script>
+      const seedInput = document.getElementById("seed");
+      const resultDiv = document.getElementById("result");
+      const resultsContainer = document.getElementById("result-container");
+      const generateRands = document.getElementById("generate-rands");
+      const optionsForm = document.getElementById("options-form");
+
+      seedInput.value = Date.now();
+
+      let randoms = [];
+
+      optionsForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (optionsForm.checkValidity()) {
+          console.log("options form is valid");
+          const prng = new PRNG(BigInt(seedInput.value));
+          for (let i = 0; i < 1_000_000; i++) {
+            randoms.push(prng.random());
+          }
+        }
+
+        optionsForm.classList.add("was-validated");
+      });
+    </script>
+  </body>
+</html>
