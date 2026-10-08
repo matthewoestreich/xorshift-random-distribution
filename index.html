@@ -16,7 +16,7 @@
         margin: auto;
       }
       .tab-content {
-        min-height: 400px;
+        min-height: 0px;
       }
     </style>
   </head>
@@ -131,7 +131,7 @@
                   type="button"
                   role="tab"
                 >
-                  Cumulative Histogram
+                  Cumulative
                 </button>
               </li>
             </ul>
@@ -265,15 +265,34 @@
           );
 
           if (activeTab) {
-            renderChartForTab(activeTab.id, randoms, binCount);
+            const activeTabId = activeTab.id;
+            clearNavTab(activeTabId);
+            showNavTabSpinner(activeTabId);
+            requestAnimationFrame(() => {
+              setTimeout(async () => {
+                await renderChartForTab(activeTabId, randoms, binCount);
+                resultContainer.scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                });
+              }, 1);
+            });
           }
         }
       });
 
       tabs.forEach((tab) => {
         tab.addEventListener("shown.bs.tab", async (event) => {
-          const activeTabId = event.target.id;
-          renderChartForTab(activeTabId, randoms, binCount);
+          requestAnimationFrame(() => {
+            setTimeout(async () => {
+              const activeTabId = event.target.id;
+              await renderChartForTab(activeTabId, randoms, binCount);
+              resultContainer.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              });
+            }, 0);
+          });
         });
       });
 
@@ -287,18 +306,70 @@
         randoms.length = 0;
       }
 
+      function clearNavTab(tabId) {
+        let chartElement;
+        switch (tabId) {
+          case "heatmap-chart-tab":
+            chartElement = document.getElementById("heatmap-chart");
+            break;
+          case "histogram-chart-tab":
+            chartElement = document.getElementById("histogram-chart");
+            break;
+          case "scattergl-chart-tab":
+            chartElement = document.getElementById("scattergl-chart");
+            break;
+          default:
+            return;
+        }
+        chartElement.replaceChildren();
+      }
+
+      function showNavTabSpinner(tabId) {
+        let spinner;
+        switch (tabId) {
+          case "heatmap-chart-tab":
+            spinner = document.getElementById("heatmap-chart-spinner");
+            break;
+          case "histogram-chart-tab":
+            spinner = document.getElementById("histogram-chart-spinner");
+            break;
+          case "scattergl-chart-tab":
+            spinner = document.getElementById("scattergl-chart-spinner");
+            break;
+          default:
+            return;
+        }
+        spinner.removeAttribute("hidden");
+      }
+
+      function hideNavTabSpinner(tabId) {
+        let spinner;
+        switch (tabId) {
+          case "heatmap-chart-tab":
+            spinner = document.getElementById("heatmap-chart-spinner");
+            break;
+          case "histogram-chart-tab":
+            spinner = document.getElementById("histogram-chart-spinner");
+            break;
+          case "scattergl-chart-tab":
+            spinner = document.getElementById("scattergl-chart-spinner");
+            break;
+          default:
+            return;
+        }
+        spinner.setAttribute("hidden", "");
+      }
+
       async function renderChartForTab(tabId, randoms, binCount) {
         if (renderedCharts[tabId]) {
           return;
         }
 
+        clearNavTab(tabId);
+        showNavTabSpinner(tabId);
+
         switch (tabId) {
           case "heatmap-chart-tab": {
-            const chartElement = document.getElementById("heatmap-chart");
-            chartElement.replaceChildren();
-            const spinner = document.getElementById("heatmap-chart-spinner");
-            spinner.removeAttribute("hidden");
-
             const bins = Array.from({ length: binCount }, () =>
               new Array(binCount).fill(0),
             );
@@ -329,7 +400,9 @@
                 },
               ],
               {
-                title: { text: `Random Numbers Count : ${randoms.length}` },
+                title: {
+                  text: `Random Numbers Count : ${randoms.length}`,
+                },
                 xaxis: {
                   title: { text: "random[i]" },
                   range: [0, 1],
@@ -340,58 +413,29 @@
                 },
               },
             );
-            renderedCharts[tabId] = true;
-            spinner.setAttribute("hidden", "");
+
             break;
           }
 
-          case "histogram-chart-tab": {
-            const chartElement = document.getElementById("histogram-chart");
-            chartElement.replaceChildren();
-            const spinner = document.getElementById("histogram-chart-spinner");
-            spinner.removeAttribute("hidden");
-
+          case "histogram-chart-tab":
             await Plotly.newPlot(
               "histogram-chart",
               [
                 {
                   x: randoms,
                   type: "histogram",
-                  marker: {
-                    color: "rgba(0, 0, 251, 0.61)",
-                    line: {
-                      color: "rgba(0, 0, 251, 1)",
-                      width: 1,
-                    },
-                  },
-                  opacity: 0.5,
                 },
               ],
               {
-                title: { text: `Random Numbers Count : ${randoms.length}` },
-                xaxis: {
-                  title: {
-                    text: "Number",
-                  },
-                },
-                yaxis: {
-                  title: {
-                    text: "Count",
-                  },
+                title: {
+                  text: `Random Numbers Count : ${randoms.length}`,
                 },
               },
             );
-            renderedCharts[tabId] = true;
-            spinner.setAttribute("hidden", "");
+
             break;
-          }
 
-          case "scattergl-chart-tab": {
-            const chartElement = document.getElementById("scattergl-chart");
-            chartElement.replaceChildren();
-            const spinner = document.getElementById("scattergl-chart-spinner");
-            spinner.removeAttribute("hidden");
-
+          case "scattergl-chart-tab":
             await Plotly.newPlot(
               "scattergl-chart",
               [
@@ -402,14 +446,17 @@
                 },
               ],
               {
-                title: { text: `Random Numbers Count : ${randoms.length}` },
+                title: {
+                  text: `Random Numbers Count : ${randoms.length}`,
+                },
               },
             );
-            renderedCharts[tabId] = true;
-            spinner.setAttribute("hidden", "");
+
             break;
-          }
         }
+
+        renderedCharts[tabId] = true;
+        hideNavTabSpinner(tabId);
       }
     </script>
   </body>
