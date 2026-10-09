@@ -8,6 +8,7 @@ const optionsForm = document.getElementById("options-form");
 const tabContainer = document.getElementById("result-tabs");
 const charts = document.querySelectorAll(".chart-container");
 const tabs = tabContainer.querySelectorAll('button[data-bs-toggle="tab"]');
+const chartsReadyText = document.getElementById("charts-ready-text");
 
 seedInput.value = Date.now();
 
@@ -29,7 +30,6 @@ optionsForm.addEventListener("submit", async (event) => {
   }
 
   resultContainer.removeAttribute("hidden");
-
   resetRenderedCharts(charts);
   resetRandoms(randoms);
 
@@ -50,14 +50,11 @@ optionsForm.addEventListener("submit", async (event) => {
   }
 
   const activeTab = document.querySelector("#result-tabs .nav-link.active");
-
   if (activeTab) {
     const activeTabId = activeTab.id;
     await renderChartForTab(activeTabId, randoms);
-    resultContainer.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
+    chartsReadyText.removeAttribute("hidden");
+    setTimeout(() => chartsReadyText.setAttribute("hidden", ""), 5000);
   }
 });
 
@@ -65,10 +62,6 @@ tabs.forEach((tab) => {
   tab.addEventListener("shown.bs.tab", async (event) => {
     const activeTabId = event.target.id;
     await renderChartForTab(activeTabId, randoms);
-    resultContainer.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
   });
 });
 
