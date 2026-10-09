@@ -5,7 +5,11 @@ async function renderChartForTab(tabId, randoms) {
   }
 
   const chartDisplay = document.querySelector(tab.dataset.chart);
-  if (!chartDisplay || chartDisplay.hasChildNodes()) {
+  if (!chartDisplay) {
+    return;
+  }
+  if (chartDisplay.hasChildNodes()) {
+    Plotly.Plots.resize(chartDisplay);
     return;
   }
 
@@ -16,6 +20,7 @@ async function renderChartForTab(tabId, randoms) {
 
   await scheduler.yield();
 
+  const dragmode = "pan";
   const responsive = true;
   const margin = {
     t: 30,
@@ -75,6 +80,7 @@ async function renderChartForTab(tabId, randoms) {
           },
         ],
         {
+          dragmode,
           margin,
           xaxis: {
             title: { text: "random[i]" },
@@ -91,10 +97,21 @@ async function renderChartForTab(tabId, randoms) {
     }
 
     case "histogram-chart-tab": {
-      const binCount = Math.max(
-        10,
-        Math.min(200, Math.floor(Math.sqrt(randoms.length))),
-      );
+      const binCount = 10;
+
+      // START : This is all done just to make the graph look good.
+      const ideal = randoms.length / binCount;
+      const counts = Array(binCount).fill(0);
+      for (const value of randoms) {
+        const index = Math.min(Math.floor(value * binCount), binCount - 1);
+        if (index >= 0) counts[index]++;
+      }
+      const lowestCount = Math.min(...counts);
+      const highestCount = Math.max(...counts);
+      const buffer = Math.ceil(randoms.length * 0.001);
+      const yStart = Math.max(0, Math.max(0, lowestCount - buffer));
+      const yEnd = highestCount + Math.max(1, Math.floor(buffer / 2));
+      // END : This is all done just to make the graph look good.
 
       await Plotly.newPlot(
         chartDisplay,
@@ -112,13 +129,34 @@ async function renderChartForTab(tabId, randoms) {
               color: "#21918c",
               line: { color: "#ffffff", width: 0.5 },
             },
+            showlegend: false,
             hovertemplate: "Range: %{x}<br>" + "Count: %{y}<extra></extra>",
+          },
+          {
+            type: "scatter",
+            mode: "lines",
+            x: [0, 1],
+            y: [ideal, ideal],
+            name: "Ideal Uniform Distribution",
+            line: { dash: "solid", width: 2 },
+            hovertemplate: "Expected count: %{y:.2f}<extra></extra>",
           },
         ],
         {
           margin,
+          dragmode,
+          legend: {
+            x: 0.001,
+            y: 1.1,
+            xanchor: "left",
+            yanchor: "top",
+            bgcolor: "rgba(0, 0, 0, 0)",
+          },
           xaxis: { title: { text: "Random value" }, range: [0, 1] },
-          yaxis: { title: { text: "Count" } },
+          yaxis: {
+            title: { text: "Count" },
+            range: [yStart, yEnd],
+          },
           bargap: 0.02,
         },
         { responsive },
@@ -152,6 +190,7 @@ async function renderChartForTab(tabId, randoms) {
         ],
         {
           margin,
+          dragmode,
           legend: {
             x: 0.1,
             y: 1,
