@@ -1,5 +1,5 @@
 const seedInput = document.getElementById("seed");
-const randomSeedCheckbox = document.getElementById("use-random-seed");
+const useRandomSeed = document.getElementById("use-random-seed");
 const resultDiv = document.getElementById("result");
 const resultContainer = document.getElementById("result-container");
 const generateRands = document.getElementById("generate-rands");
@@ -14,7 +14,7 @@ seedInput.value = Date.now();
 
 const randoms = [];
 
-randomSeedCheckbox.addEventListener("change", (event) => {
+useRandomSeed.addEventListener("change", (event) => {
   const isChecked = event.target.checked;
   seedInput.disabled = isChecked;
   seedInput.value = isChecked ? "" : Date.now();
@@ -24,44 +24,28 @@ optionsForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   event.stopPropagation();
 
-  const isFormValid = optionsForm.checkValidity();
-  optionsForm.classList.add("was-validated");
-
-  if (!isFormValid) {
+  if (!isFormValid(optionsForm)) {
     return;
   }
 
-  resultContainer.removeAttribute("hidden");
-  resetRenderedCharts(charts);
-  resetRandoms(randoms);
+  const activeTab = document.querySelector("#result-tabs .nav-link.active");
 
-  const seed = BigInt(
-    randomSeedCheckbox.checked ? Date.now() : seedInput.value,
+  resetRenderedCharts(charts);
+  normalizeRandomsCount(randsCount);
+  showTabSpinner(activeTab);
+  resultContainer.removeAttribute("hidden");
+
+  await generateRandomNumbersInChunks(
+    randoms,
+    useRandomSeed.checked,
+    seedInput.value,
+    randsCount.value,
+    10_000,
   );
 
-  const prng = new PRNG(seed);
-
-  let randsCountValue = Number(randsCount.value);
-  if (randsCountValue % 2 !== 0) {
-    randsCountValue++;
-    randsCount.value = randsCountValue;
-  }
-
-  for (let i = 0; i < randsCountValue; i++) {
-    randoms.push(prng.random());
-  }
-
-  const activeTab = document.querySelector("#result-tabs .nav-link.active");
   if (activeTab) {
     renderChartForTab(activeTab.id, randoms);
-
-    if (!window.chartReadyTextTimer) {
-      chartsReadyText.removeAttribute("hidden");
-      window.chartReadyTextTimer = setTimeout(() => {
-        chartsReadyText.setAttribute("hidden", "");
-        clearTimeout(window.chartReadyTextTimer);
-      }, 3500);
-    }
+    showChartReadyText(chartsReadyText);
   }
 });
 
@@ -72,6 +56,53 @@ tabs.forEach((tab) => {
   });
 });
 
+function showTabSpinner(tabElement) {
+  if (!tabElement) {
+    return;
+  }
+  const spinner = document.querySelector(tabElement.dataset.chartSpinner);
+  if (spinner) {
+    spinner.removeAttribute("hidden");
+  }
+}
+
+async function generateRandomNumbersInChunks(
+  outArray = [],
+  useRandomSeed = false,
+  seedValue = 0, // Number
+  count = 0,
+  chunkSize = 0,
+) {
+  randoms.length = 0; // reset array
+  const seed = BigInt(useRandomSeed ? Date.now() : seedValue);
+  const prng = new PRNG(seed);
+
+  for (let i = 0; i < count; i += chunkSize) {
+    const size = Math.min(chunkSize, count - i);
+
+    for (let j = 0; j < size; j++) {
+      randoms.push(prng.random());
+    }
+
+    // Let the browser process pending UI work.
+    await scheduler.yield();
+  }
+}
+
+function normalizeRandomsCount(inputElement) {
+  let v = Number(inputElement.value);
+  if (v % 2 !== 0) {
+    v++;
+    randsCount.value = v;
+  }
+}
+
+function isFormValid(formElement) {
+  const isValid = formElement.checkValidity();
+  formElement.classList.add("was-validated");
+  return isValid;
+}
+
 // charts : array of elements. each element should be root element of plotly chart.
 function resetRenderedCharts(charts) {
   for (const chart of charts) {
@@ -79,6 +110,12 @@ function resetRenderedCharts(charts) {
   }
 }
 
-function resetRandoms(randoms) {
-  randoms.length = 0;
+function showChartReadyText(chartsReadyText) {
+  if (!window.chartReadyTextTimer) {
+    chartsReadyText.removeAttribute("hidden");
+    window.chartReadyTextTimer = setTimeout(() => {
+      chartsReadyText.setAttribute("hidden", "");
+      clearTimeout(window.chartReadyTextTimer);
+    }, 3500);
+  }
 }
