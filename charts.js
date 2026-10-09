@@ -18,20 +18,38 @@ async function renderChartForTab(tabId, randoms) {
 
   switch (tabId) {
     case "heatmap-chart-tab": {
+      const pairCount = Math.max(0, randoms.length - 1);
+
       const binCount = Math.max(
-        10,
-        Math.min(200, Math.floor(Math.sqrt(randoms.length / 10))),
+        1,
+        Math.min(200, Math.floor(Math.sqrt(pairCount / 10))),
       );
 
       const bins = Array.from({ length: binCount }, () =>
         new Array(binCount).fill(0),
       );
 
-      for (let i = 0; i < randoms.length - 1; i++) {
-        const x = Math.floor(randoms[i] * binCount);
-        const y = Math.floor(randoms[i + 1] * binCount);
+      for (let i = 0; i < pairCount; i++) {
+        const x = Math.min(binCount - 1, Math.floor(randoms[i] * binCount));
+        const y = Math.min(binCount - 1, Math.floor(randoms[i + 1] * binCount));
         bins[y][x]++;
       }
+
+      const binSize = 1 / binCount;
+      const hovertext = Array.from({ length: binCount }, (_, y) =>
+        Array.from({ length: binCount }, (_, x) => {
+          const xStart = x * binSize;
+          const xEnd = (x + 1) * binSize;
+          const yStart = y * binSize;
+          const yEnd = (y + 1) * binSize;
+
+          return (
+            `X: ${xStart.toFixed(4)}–${xEnd.toFixed(4)}` +
+            `<br>Y: ${yStart.toFixed(4)}–${yEnd.toFixed(4)}` +
+            `<br>Count: ${bins[y][x]}`
+          );
+        }),
+      );
 
       await Plotly.newPlot(
         chartDisplay,
@@ -44,10 +62,8 @@ async function renderChartForTab(tabId, randoms) {
             colorbar: {
               title: "Count",
             },
-            hovertemplate:
-              "rₙ: %{x:.4f}<br>" +
-              "rₙ₊₁: %{y:.4f}<br>" +
-              "Count: %{z}<extra></extra>",
+            text: hovertext,
+            hovertemplate: "%{text}<extra></extra>",
           },
         ],
         {
