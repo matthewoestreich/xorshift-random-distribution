@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>XorShift128+ Random Distribution</title>
     <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.2/font/bootstrap-icons.min.css"
+    />
+    <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
       rel="stylesheet"
       integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
@@ -16,7 +20,7 @@
         margin: auto;
       }
       .tab-content {
-        min-height: 600px;
+        min-height: 550px;
       }
     </style>
   </head>
@@ -160,20 +164,37 @@
                 tabindex="0"
               >
                 <div class="row mt-1">
-                  <div class="col-lg-8 offset-lg-2 text-center">
-                    <p class="mb-0 small">
-                      This heatmap shows how often consecutive random numbers
-                      fall within different ranges.
-                      <b>
-                        It does not show whether the individual numbers are
-                        uniformly distributed on their own.
-                      </b>
-                      The X-axis represents a random number
-                      (<code>random[i]</code>), and the Y-axis represents the
-                      next (<code>random[i + 1]</code>). Each square shows how
-                      many times a pair of numbers falls within the
-                      corresponding ranges.
-                    </p>
+                  <div class="col-lg-4 offset-lg-4">
+                    <button
+                      class="btn btn-sm border-0 d-inline-flex align-items-center gap-2"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#heatmap-description"
+                      aria-expanded="false"
+                      aria-controls="heatmap-description"
+                    >
+                      <i class="bi bi-info-circle"></i>
+                      How to read this heatmap
+                    </button>
+                  </div>
+                  <div class="col-lg-8 offset-lg-2 col-12">
+                    <div class="collapse mt-2" id="heatmap-description">
+                      <div class="border rounded-3 p-3">
+                        <p class="small mb-3">
+                          Each square counts how often two consecutive random
+                          numbers fall within the corresponding ranges.
+                        </p>
+                        <div
+                          class="alert border small mb-0 py-2 alert-warning"
+                          role="alert"
+                        >
+                          <strong>Important:</strong>
+                          This heatmap shows relationships between consecutive
+                          numbers. It does not establish whether individual
+                          numbers are uniformly distributed.
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div
@@ -246,8 +267,8 @@
       crossorigin="anonymous"
     ></script>
     <script src="https://unpkg.com/scheduler-polyfill"></script>
-    <script src="./main.js"></script>
     <script src="./chrome-math-random.js"></script>
     <script src="./charts.js"></script>
+    <script src="./main.js"></script>
   </body>
 </html>

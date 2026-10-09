@@ -18,7 +18,7 @@ async function renderChartForTab(tabId, randoms) {
 
   const responsive = true;
   const margin = {
-    t: 1,
+    t: 30,
     b: 40,
     l: 40,
     r: 10,
