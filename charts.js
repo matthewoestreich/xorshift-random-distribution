@@ -22,7 +22,7 @@ async function renderChartForTab(tabId, randoms) {
 
       const binCount = Math.max(
         1,
-        Math.min(200, Math.floor(Math.sqrt(pairCount / 10))),
+        Math.min(200, Math.floor(Math.sqrt(pairCount))),
       );
 
       const bins = Array.from({ length: binCount }, () =>
@@ -67,8 +67,11 @@ async function renderChartForTab(tabId, randoms) {
           },
         ],
         {
-          title: {
-            text: `Random Numbers Count : ${randoms.length}`,
+          margin: {
+            t: 0, // Top margin
+            b: 40, // Bottom margin (adjust for X-axis labels)
+            l: 40, // Left margin (adjust for Y-axis labels)
+            r: 10, // Right margin
           },
           xaxis: {
             title: { text: "random[i]" },
@@ -109,14 +112,16 @@ async function renderChartForTab(tabId, randoms) {
           },
         ],
         {
-          title: {
-            text: `Random Numbers Count : ${randoms.length}`,
+          margin: {
+            t: 0, // Top margin
+            b: 40, // Bottom margin (adjust for X-axis labels)
+            l: 40, // Left margin (adjust for Y-axis labels)
+            r: 10, // Right margin
           },
           xaxis: { title: { text: "Random value" }, range: [0, 1] },
           yaxis: { title: { text: "Count" } },
           bargap: 0.02,
         },
-        { responsive: true },
       );
       break;
     }
@@ -132,8 +137,11 @@ async function renderChartForTab(tabId, randoms) {
           },
         ],
         {
-          title: {
-            text: `Random Numbers Count : ${randoms.length}`,
+          margin: {
+            t: 0, // Top margin
+            b: 40, // Bottom margin (adjust for X-axis labels)
+            l: 40, // Left margin (adjust for Y-axis labels)
+            r: 10, // Right margin
           },
         },
       );

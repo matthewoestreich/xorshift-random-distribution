@@ -16,7 +16,7 @@
         margin: auto;
       }
       .tab-content {
-        min-height: 450px;
+        min-height: 600px;
       }
     </style>
   </head>
@@ -29,8 +29,8 @@
       </header>
 
       <div class="row g-4">
-        <main class="col-lg-8">
-          <h2>The Implementation</h2>
+        <main class="col-lg-8 offset-lg-2">
+          <h2>Implementation</h2>
           <p>
             We use an exact clone of the <code>Math.random</code> implementation
             used by Chrome
@@ -86,7 +86,9 @@
                   required
                 />
                 <label for="randoms-count">Count</label>
-                <div class="invalid-feedback">Count must be a number.</div>
+                <div class="invalid-feedback">
+                  Count must be a number less than or equal to the max.
+                </div>
               </div>
             </form>
             <div class="pt-4">
@@ -105,7 +107,7 @@
       <div class="row">
         <div class="col-lg-12">
           <div id="result-container" hidden class="pt-4">
-            <h2>Random Distribution</h2>
+            <h2>Charts</h2>
             <ul class="nav nav-tabs" id="result-tabs" role="tablist">
               <li class="nav-item" role="presentation">
                 <button
@@ -157,6 +159,23 @@
                 role="tabpanel"
                 tabindex="0"
               >
+                <div class="row mt-1">
+                  <div class="col-8 offset-2 text-center">
+                    <p class="mb-0 small">
+                      This heatmap shows how often consecutive random numbers
+                      fall within different ranges.
+                      <b>
+                        It does not show whether the individual numbers are
+                        uniformly distributed on their own.
+                      </b>
+                      The X-axis represents a random number
+                      (<code>random[i]</code>), and the Y-axis represents the
+                      next (<code>random[i + 1]</code>). Each square shows how
+                      many times a pair of numbers falls within the
+                      corresponding ranges.
+                    </p>
+                  </div>
+                </div>
                 <div
                   class="d-flex justify-content-center align-items-center w-100 h-100 bg-white bg-opacity-70"
                   style="z-index: 10; top: 0; left: 0"
