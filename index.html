@@ -15,9 +15,6 @@
         max-width: 100%;
         margin: auto;
       }
-      .tab-content {
-        min-height: 0px;
-      }
     </style>
   </head>
   <body>
@@ -104,6 +101,8 @@
                   id="heatmap-chart-tab"
                   data-bs-toggle="tab"
                   data-bs-target="#heatmap-chart-tab-pane"
+                  data-chart="#heatmap-chart"
+                  data-chart-spinner="#heatmap-chart-spinner"
                   type="button"
                   role="tab"
                 >
@@ -116,6 +115,8 @@
                   id="histogram-chart-tab"
                   data-bs-toggle="tab"
                   data-bs-target="#histogram-chart-tab-pane"
+                  data-chart="#histogram-chart"
+                  data-chart-spinner="#histogram-chart-spinner"
                   type="button"
                   role="tab"
                 >
@@ -125,9 +126,11 @@
               <li class="nav-item" role="presentation">
                 <button
                   class="nav-link"
-                  id="scattergl-chart-tab"
+                  id="cumulative-chart-tab"
                   data-bs-toggle="tab"
-                  data-bs-target="#scattergl-chart-tab-pane"
+                  data-bs-target="#cumulative-chart-tab-pane"
+                  data-chart="#cumulative-chart"
+                  data-chart-spinner="#cumulative-chart-spinner"
                   type="button"
                   role="tab"
                 >
@@ -178,7 +181,7 @@
               </div>
               <div
                 class="tab-pane"
-                id="scattergl-chart-tab-pane"
+                id="cumulative-chart-tab-pane"
                 role="tabpanel"
                 tabindex="0"
               >
@@ -187,14 +190,14 @@
                   style="z-index: 10; top: 0; left: 0"
                 >
                   <div
-                    id="scattergl-chart-spinner"
+                    id="cumulative-chart-spinner"
                     class="spinner-border text-primary"
                     role="status"
                   >
                     <span class="visually-hidden">Loading...</span>
                   </div>
                 </div>
-                <div id="scattergl-chart" class="chart-container"></div>
+                <div id="cumulative-chart" class="chart-container"></div>
               </div>
             </div>
           </div>
@@ -212,6 +215,7 @@
       crossorigin="anonymous"
     ></script>
     <script src="./chrome-math-random.js"></script>
+    <script src="./charts.js"></script>
     <script>
       const seedInput = document.getElementById("seed");
       const resultDiv = document.getElementById("result");
@@ -220,20 +224,15 @@
       const randsCount = document.getElementById("randoms-count");
       const optionsForm = document.getElementById("options-form");
       const tabContainer = document.getElementById("result-tabs");
-      const tabs = tabContainer.querySelectorAll(
-        'button[data-bs-toggle="tab"]',
-      );
+      const charts = document.querySelectorAll(".chart-container");
 
       seedInput.value = Date.now();
 
       const randoms = [];
-      const binCount = 10;
 
-      const renderedCharts = {
-        "heatmap-chart-tab": false,
-        "histogram-chart-tab": false,
-        "scattergl-chart-tab": false,
-      };
+      const tabs = tabContainer.querySelectorAll(
+        'button[data-bs-toggle="tab"]',
+      );
 
       optionsForm.addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -242,221 +241,61 @@
         const isFormValid = optionsForm.checkValidity();
         optionsForm.classList.add("was-validated");
 
-        if (isFormValid) {
-          resultContainer.removeAttribute("hidden");
+        if (!isFormValid) {
+          return;
+        }
 
-          resetRenderedCharts(renderedCharts);
-          resetRandoms(randoms);
+        resultContainer.removeAttribute("hidden");
 
-          const prng = new PRNG(BigInt(seedInput.value));
+        resetRenderedCharts(charts);
+        resetRandoms(randoms);
 
-          let randsCountValue = Number(randsCount.value);
-          if (randsCountValue % 2 !== 0) {
-            randsCountValue++;
-            randsCount.value = randsCountValue;
-          }
+        const prng = new PRNG(BigInt(seedInput.value));
 
-          for (let i = 0; i < randsCountValue; i++) {
-            randoms.push(prng.random());
-          }
+        let randsCountValue = Number(randsCount.value);
+        if (randsCountValue % 2 !== 0) {
+          randsCountValue++;
+          randsCount.value = randsCountValue;
+        }
 
-          const activeTab = document.querySelector(
-            "#result-tabs .nav-link.active",
-          );
+        for (let i = 0; i < randsCountValue; i++) {
+          randoms.push(prng.random());
+        }
 
-          if (activeTab) {
-            const activeTabId = activeTab.id;
-            clearNavTab(activeTabId);
-            showNavTabSpinner(activeTabId);
-            requestAnimationFrame(() => {
-              setTimeout(async () => {
-                await renderChartForTab(activeTabId, randoms, binCount);
-                resultContainer.scrollIntoView({
-                  behavior: "smooth",
-                  block: "start",
-                });
-              }, 1);
-            });
-          }
+        const activeTab = document.querySelector(
+          "#result-tabs .nav-link.active",
+        );
+
+        if (activeTab) {
+          const activeTabId = activeTab.id;
+          await renderChartForTab(activeTabId, randoms);
+          resultContainer.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
         }
       });
 
       tabs.forEach((tab) => {
         tab.addEventListener("shown.bs.tab", async (event) => {
-          requestAnimationFrame(() => {
-            setTimeout(async () => {
-              const activeTabId = event.target.id;
-              await renderChartForTab(activeTabId, randoms, binCount);
-              resultContainer.scrollIntoView({
-                behavior: "smooth",
-                block: "start",
-              });
-            }, 0);
+          const activeTabId = event.target.id;
+          await renderChartForTab(activeTabId, randoms);
+          resultContainer.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
           });
         });
       });
 
-      function resetRenderedCharts(renderedCharts = {}) {
-        for (const key of Object.keys(renderedCharts)) {
-          renderedCharts[key] = false;
+      // charts : array of elements. each element should be root element of plotly chart.
+      function resetRenderedCharts(charts) {
+        for (const chart of charts) {
+          chart.replaceChildren();
         }
       }
 
       function resetRandoms(randoms) {
         randoms.length = 0;
-      }
-
-      function clearNavTab(tabId) {
-        let chartElement;
-        switch (tabId) {
-          case "heatmap-chart-tab":
-            chartElement = document.getElementById("heatmap-chart");
-            break;
-          case "histogram-chart-tab":
-            chartElement = document.getElementById("histogram-chart");
-            break;
-          case "scattergl-chart-tab":
-            chartElement = document.getElementById("scattergl-chart");
-            break;
-          default:
-            return;
-        }
-        chartElement.replaceChildren();
-      }
-
-      function showNavTabSpinner(tabId) {
-        let spinner;
-        switch (tabId) {
-          case "heatmap-chart-tab":
-            spinner = document.getElementById("heatmap-chart-spinner");
-            break;
-          case "histogram-chart-tab":
-            spinner = document.getElementById("histogram-chart-spinner");
-            break;
-          case "scattergl-chart-tab":
-            spinner = document.getElementById("scattergl-chart-spinner");
-            break;
-          default:
-            return;
-        }
-        spinner.removeAttribute("hidden");
-      }
-
-      function hideNavTabSpinner(tabId) {
-        let spinner;
-        switch (tabId) {
-          case "heatmap-chart-tab":
-            spinner = document.getElementById("heatmap-chart-spinner");
-            break;
-          case "histogram-chart-tab":
-            spinner = document.getElementById("histogram-chart-spinner");
-            break;
-          case "scattergl-chart-tab":
-            spinner = document.getElementById("scattergl-chart-spinner");
-            break;
-          default:
-            return;
-        }
-        spinner.setAttribute("hidden", "");
-      }
-
-      async function renderChartForTab(tabId, randoms, binCount) {
-        if (renderedCharts[tabId]) {
-          return;
-        }
-
-        clearNavTab(tabId);
-        showNavTabSpinner(tabId);
-
-        switch (tabId) {
-          case "heatmap-chart-tab": {
-            const bins = Array.from({ length: binCount }, () =>
-              new Array(binCount).fill(0),
-            );
-
-            for (let i = 0; i < randoms.length - 1; i++) {
-              const x = Math.floor(randoms[i] * binCount);
-              const y = Math.floor(randoms[i + 1] * binCount);
-              bins[y][x]++;
-            }
-
-            await Plotly.newPlot(
-              "heatmap-chart",
-              [
-                {
-                  type: "heatmap",
-                  z: bins,
-                  x: Array.from(
-                    { length: binCount },
-                    (_, i) => (i + 0.5) / binCount,
-                  ),
-                  y: Array.from(
-                    { length: binCount },
-                    (_, i) => (i + 0.5) / binCount,
-                  ),
-                  colorbar: {
-                    title: "Count",
-                  },
-                },
-              ],
-              {
-                title: {
-                  text: `Random Numbers Count : ${randoms.length}`,
-                },
-                xaxis: {
-                  title: { text: "random[i]" },
-                  range: [0, 1],
-                },
-                yaxis: {
-                  title: { text: "random[i + 1]" },
-                  range: [0, 1],
-                },
-              },
-            );
-
-            break;
-          }
-
-          case "histogram-chart-tab":
-            await Plotly.newPlot(
-              "histogram-chart",
-              [
-                {
-                  x: randoms,
-                  type: "histogram",
-                },
-              ],
-              {
-                title: {
-                  text: `Random Numbers Count : ${randoms.length}`,
-                },
-              },
-            );
-
-            break;
-
-          case "scattergl-chart-tab":
-            await Plotly.newPlot(
-              "scattergl-chart",
-              [
-                {
-                  x: randoms,
-                  type: "histogram",
-                  cumulative: { enabled: true },
-                },
-              ],
-              {
-                title: {
-                  text: `Random Numbers Count : ${randoms.length}`,
-                },
-              },
-            );
-
-            break;
-        }
-
-        renderedCharts[tabId] = true;
-        hideNavTabSpinner(tabId);
       }
     </script>
   </body>
