@@ -133,10 +133,35 @@ async function renderChartForTab(tabId, randoms) {
           {
             x: randoms,
             type: "histogram",
+            histnorm: "probability",
             cumulative: { enabled: true },
+            showlegend: false,
+            hovertemplate:
+              "Random Value: %{x:.4f}<br>" +
+              "Cumulative Probability: %{y:.2%}" +
+              "<extra></extra>",
+          },
+          {
+            x: [0, 1],
+            y: [0, 1],
+            type: "scatter",
+            mode: "lines",
+            name: "Ideal Uniform Distribution",
+            line: { dash: "solid" },
           },
         ],
-        { margin },
+        {
+          margin,
+          legend: {
+            x: 0.1,
+            y: 1,
+            xanchor: "left",
+            yanchor: "top",
+            bgcolor: "rgba(0, 0, 0, 0)",
+          },
+          xaxis: { title: { text: "Random value" } },
+          yaxis: { title: { text: "Cumulative Distribution" } },
+        },
         { responsive },
       );
       break;

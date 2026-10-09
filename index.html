@@ -105,8 +105,8 @@
                 Generate Random Numbers
               </button>
               <div id="charts-ready-text" class="mt-0" hidden>
-                <small class="d-block text-danger">
-                  Please scroll down to view results
+                <small class="d-block text-primary">
+                  <b>Please scroll down to view results</b>
                 </small>
               </div>
             </div>
@@ -183,7 +183,7 @@
                     </button>
                   </div>
                   <div class="col-lg-8 offset-lg-2 col-12">
-                    <div class="collapse mt-2" id="heatmap-description">
+                    <div id="heatmap-description" class="collapse mt-2">
                       <div class="border rounded-3 p-3">
                         <p class="small mb-3">
                           Each square counts how often two consecutive random
@@ -222,6 +222,34 @@
                 role="tabpanel"
                 tabindex="0"
               >
+                <div class="row mt-1">
+                  <div class="col-lg-4 offset-lg-4">
+                    <button
+                      class="btn btn-sm border-0 d-inline-flex align-items-center gap-2"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#histogram-description"
+                      aria-expanded="false"
+                      aria-controls="histogram-description"
+                    >
+                      <i class="bi bi-info-circle"></i>
+                      How to read this histogram
+                    </button>
+                  </div>
+                  <div class="col-lg-8 offset-lg-2 col-12">
+                    <div id="histogram-description" class="collapse mt-2">
+                      <div class="border rounded-3 p-3">
+                        <p class="small mb-0">
+                          This graph shows how frequently values fall within
+                          different ranges. A PRNG with a uniform distribution
+                          should produce values that are approximately evenly
+                          distributed across all ranges, resulting in bars of
+                          roughly equal height.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 <div
                   class="d-flex justify-content-center align-items-center w-100 h-100 bg-white bg-opacity-70"
                   style="z-index: 10; top: 0; left: 0"
@@ -242,6 +270,33 @@
                 role="tabpanel"
                 tabindex="0"
               >
+                <div class="row mt-1">
+                  <div class="col-lg-4 offset-lg-4">
+                    <button
+                      class="btn btn-sm border-0 d-inline-flex align-items-center gap-2"
+                      type="button"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#cumulative-description"
+                      aria-expanded="false"
+                      aria-controls="cumulative-description"
+                    >
+                      <i class="bi bi-info-circle"></i>
+                      How to read this cumulative histogram
+                    </button>
+                  </div>
+                  <div class="col-lg-8 offset-lg-2 col-12">
+                    <div id="cumulative-description" class="collapse mt-2">
+                      <div class="border rounded-3 p-3">
+                        <p class="small mb-0">
+                          This graph shows the cumulative frequency or
+                          probability of values at or below each point. For a
+                          uniformly distributed PRNG, the cumulative probability
+                          should increase approximately linearly from 0 to 1.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 <div
                   class="d-flex justify-content-center align-items-center w-100 h-100 bg-white bg-opacity-70"
                   style="z-index: 10; top: 0; left: 0"

@@ -15,7 +15,9 @@ seedInput.value = Date.now();
 const randoms = [];
 
 randomSeedCheckbox.addEventListener("change", (event) => {
-  seedInput.disabled = event.target.checked;
+  const isChecked = event.target.checked;
+  seedInput.disabled = isChecked;
+  seedInput.value = isChecked ? "" : Date.now();
 });
 
 optionsForm.addEventListener("submit", async (event) => {
@@ -51,10 +53,15 @@ optionsForm.addEventListener("submit", async (event) => {
 
   const activeTab = document.querySelector("#result-tabs .nav-link.active");
   if (activeTab) {
-    const activeTabId = activeTab.id;
-    await renderChartForTab(activeTabId, randoms);
-    chartsReadyText.removeAttribute("hidden");
-    setTimeout(() => chartsReadyText.setAttribute("hidden", ""), 5000);
+    await renderChartForTab(activeTab.id, randoms);
+
+    if (!window.chartReadyTextTimer) {
+      chartsReadyText.removeAttribute("hidden");
+      window.chartReadyTextTimer = setTimeout(() => {
+        chartsReadyText.setAttribute("hidden", "");
+        clearTimeout(window.chartReadyTextTimer);
+      }, 3500);
+    }
   }
 });
 
