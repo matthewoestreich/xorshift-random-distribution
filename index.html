@@ -66,8 +66,7 @@
                 <div class="invalid-feedback">Seed must be a number.</div>
               </div>
               <p class="pt-2 my-1">
-                How many numbers should we generate? Up to 2,000,000 numbers,
-                must be even!
+                How many numbers should we generate? Max is 2,000,000.
               </p>
               <div class="form-floating mt-0">
                 <input
@@ -234,14 +233,13 @@
       const optionsForm = document.getElementById("options-form");
       const tabContainer = document.getElementById("result-tabs");
       const charts = document.querySelectorAll(".chart-container");
+      const tabs = tabContainer.querySelectorAll(
+        'button[data-bs-toggle="tab"]',
+      );
 
       seedInput.value = Date.now();
 
       const randoms = [];
-
-      const tabs = tabContainer.querySelectorAll(
-        'button[data-bs-toggle="tab"]',
-      );
 
       randomSeedCheckbox.addEventListener("change", (event) => {
         seedInput.disabled = event.target.checked;
@@ -263,9 +261,9 @@
         resetRenderedCharts(charts);
         resetRandoms(randoms);
 
-        const seed = randomSeedCheckbox.checked
-          ? BigInt(Date.now())
-          : BigInt(seedInput.value);
+        const seed = BigInt(
+          randomSeedCheckbox.checked ? Date.now() : seedInput.value,
+        );
 
         const prng = new PRNG(seed);
 
