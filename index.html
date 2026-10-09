@@ -47,8 +47,13 @@
             <h2>Options</h2>
             <form id="options-form" class="row g-3 needs-validation" novalidate>
               <p class="pt-2 my-1">
-                You can seed the implementation with any number you like.
+                You can seed the implementation with any number you like, or use
+                a random seed.
               </p>
+              <div class="form-field mt-0">
+                <input id="use-random-seed" type="checkbox" class="check" />
+                <label for="use-random-seed">Use a random seed</label>
+              </div>
               <div class="form-floating mt-0">
                 <input
                   id="seed"
@@ -221,6 +226,7 @@
     <script src="./charts.js"></script>
     <script>
       const seedInput = document.getElementById("seed");
+      const randomSeedCheckbox = document.getElementById("use-random-seed");
       const resultDiv = document.getElementById("result");
       const resultContainer = document.getElementById("result-container");
       const generateRands = document.getElementById("generate-rands");
@@ -236,6 +242,10 @@
       const tabs = tabContainer.querySelectorAll(
         'button[data-bs-toggle="tab"]',
       );
+
+      randomSeedCheckbox.addEventListener("change", (event) => {
+        seedInput.disabled = event.target.checked;
+      });
 
       optionsForm.addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -253,7 +263,11 @@
         resetRenderedCharts(charts);
         resetRandoms(randoms);
 
-        const prng = new PRNG(BigInt(seedInput.value));
+        const seed = randomSeedCheckbox.checked
+          ? BigInt(Date.now())
+          : BigInt(seedInput.value);
+
+        const prng = new PRNG(seed);
 
         let randsCountValue = Number(randsCount.value);
         if (randsCountValue % 2 !== 0) {
