@@ -16,6 +16,13 @@ async function renderChartForTab(tabId, randoms) {
 
   await scheduler.yield();
 
+  const margin = {
+    t: 1,
+    b: 40,
+    l: 40,
+    r: 10,
+  };
+
   switch (tabId) {
     case "heatmap-chart-tab": {
       const pairCount = Math.max(0, randoms.length - 1);
@@ -67,12 +74,7 @@ async function renderChartForTab(tabId, randoms) {
           },
         ],
         {
-          margin: {
-            t: 0, // Top margin
-            b: 40, // Bottom margin (adjust for X-axis labels)
-            l: 40, // Left margin (adjust for Y-axis labels)
-            r: 10, // Right margin
-          },
+          margin,
           xaxis: {
             title: { text: "random[i]" },
             range: [0, 1],
@@ -112,12 +114,7 @@ async function renderChartForTab(tabId, randoms) {
           },
         ],
         {
-          margin: {
-            t: 0, // Top margin
-            b: 40, // Bottom margin (adjust for X-axis labels)
-            l: 40, // Left margin (adjust for Y-axis labels)
-            r: 10, // Right margin
-          },
+          margin,
           xaxis: { title: { text: "Random value" }, range: [0, 1] },
           yaxis: { title: { text: "Count" } },
           bargap: 0.02,
@@ -136,14 +133,7 @@ async function renderChartForTab(tabId, randoms) {
             cumulative: { enabled: true },
           },
         ],
-        {
-          margin: {
-            t: 0, // Top margin
-            b: 40, // Bottom margin (adjust for X-axis labels)
-            l: 40, // Left margin (adjust for Y-axis labels)
-            r: 10, // Right margin
-          },
-        },
+        { margin },
       );
       break;
     }
