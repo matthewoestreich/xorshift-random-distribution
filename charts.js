@@ -16,6 +16,7 @@ async function renderChartForTab(tabId, randoms) {
 
   await scheduler.yield();
 
+  const responsive = true;
   const margin = {
     t: 1,
     b: 40,
@@ -84,6 +85,7 @@ async function renderChartForTab(tabId, randoms) {
             range: [0, 1],
           },
         },
+        { responsive },
       );
       break;
     }
@@ -119,6 +121,7 @@ async function renderChartForTab(tabId, randoms) {
           yaxis: { title: { text: "Count" } },
           bargap: 0.02,
         },
+        { responsive },
       );
       break;
     }
@@ -134,6 +137,7 @@ async function renderChartForTab(tabId, randoms) {
           },
         ],
         { margin },
+        { responsive },
       );
       break;
     }
