@@ -53,7 +53,7 @@ optionsForm.addEventListener("submit", async (event) => {
 
   const activeTab = document.querySelector("#result-tabs .nav-link.active");
   if (activeTab) {
-    await renderChartForTab(activeTab.id, randoms);
+    renderChartForTab(activeTab.id, randoms);
 
     if (!window.chartReadyTextTimer) {
       chartsReadyText.removeAttribute("hidden");

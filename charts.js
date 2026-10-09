@@ -25,7 +25,7 @@ async function renderChartForTab(tabId, randoms) {
   const margin = {
     t: 30,
     b: 40,
-    l: 40,
+    l: 70,
     r: 10,
   };
 
@@ -137,7 +137,7 @@ async function renderChartForTab(tabId, randoms) {
             mode: "lines",
             x: [0, 1],
             y: [ideal, ideal],
-            name: "Ideal Uniform Distribution",
+            name: "Perfect Uniform Distribution",
             line: { dash: "solid", width: 2 },
             hovertemplate: "Expected count: %{y:.2f}<extra></extra>",
           },
@@ -184,7 +184,7 @@ async function renderChartForTab(tabId, randoms) {
             y: [0, 1],
             type: "scatter",
             mode: "lines",
-            name: "Ideal Uniform Distribution",
+            name: "Perfect Uniform Distribution",
             line: { dash: "solid" },
           },
         ],
