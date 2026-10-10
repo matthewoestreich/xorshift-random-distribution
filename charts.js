@@ -25,7 +25,7 @@ async function renderChartForTab(tabId, randoms) {
   const margin = {
     t: 30,
     b: 40,
-    l: 70,
+    l: 45,
     r: 10,
   };
 
@@ -129,7 +129,6 @@ async function renderChartForTab(tabId, randoms) {
               color: "#21918c",
               line: { color: "#ffffff", width: 0.5 },
             },
-            showlegend: false,
             hovertemplate: "Range: %{x}<br>" + "Count: %{y}<extra></extra>",
           },
           {
@@ -145,13 +144,7 @@ async function renderChartForTab(tabId, randoms) {
         {
           margin,
           dragmode,
-          legend: {
-            x: 0.001,
-            y: 1.1,
-            xanchor: "left",
-            yanchor: "top",
-            bgcolor: "rgba(0, 0, 0, 0)",
-          },
+          showlegend: false,
           xaxis: { title: { text: "Random value" }, range: [0, 1] },
           yaxis: {
             title: { text: "Count" },
@@ -173,7 +166,6 @@ async function renderChartForTab(tabId, randoms) {
             type: "histogram",
             histnorm: "probability",
             cumulative: { enabled: true },
-            showlegend: false,
             hovertemplate:
               "Random Value: %{x:.4f}<br>" +
               "Cumulative Probability: %{y:.2%}" +
@@ -191,15 +183,9 @@ async function renderChartForTab(tabId, randoms) {
         {
           margin,
           dragmode,
-          legend: {
-            x: 0.1,
-            y: 1,
-            xanchor: "left",
-            yanchor: "top",
-            bgcolor: "rgba(0, 0, 0, 0)",
-          },
+          showlegend: false,
           xaxis: { title: { text: "Random value" } },
-          yaxis: { title: { text: "Cumulative Distribution" } },
+          yaxis: { title: { text: "Cumulative Probability" } },
         },
         { responsive },
       );

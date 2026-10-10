@@ -96,8 +96,8 @@
               </div>
             </form>
             <div
-              class="pt-4 d-flex flex-column align-items-start"
-              style="min-height: 85px"
+              class="pt-2 d-flex flex-column align-items-start"
+              style="min-height: 67px"
             >
               <div id="charts-ready-text" hidden>
                 <small class="d-block text-primary">
@@ -188,7 +188,7 @@
                   <div class="col-lg-8 offset-lg-2 col-12">
                     <div id="heatmap-description" class="collapse mt-2">
                       <div class="border rounded-3 p-3">
-                        <p class="small mb-3">
+                        <p class="small mb-2">
                           Each square counts how often two consecutive random
                           numbers fall within the corresponding ranges.
                         </p>
@@ -196,10 +196,14 @@
                           class="alert border small mb-0 py-2 alert-warning"
                           role="alert"
                         >
-                          <strong>Important:</strong>
+                          <i class="bi bi-exclamation-square"></i>
                           This heatmap shows relationships between consecutive
                           numbers. It does not establish whether individual
                           numbers are uniformly distributed.
+                          <b>
+                            The more this resembles "white noise" the better.
+                            Repeating patterns are bad.
+                          </b>
                         </div>
                       </div>
                     </div>
@@ -211,7 +215,7 @@
                 >
                   <div
                     id="heatmap-chart-spinner"
-                    class="spinner-border text-primary"
+                    class="spinner-border text-primary mt-2"
                     role="status"
                   >
                     <span class="visually-hidden">Loading...</span>
@@ -242,13 +246,24 @@
                   <div class="col-lg-8 offset-lg-2 col-12">
                     <div id="histogram-description" class="collapse mt-2">
                       <div class="border rounded-3 p-3">
-                        <p class="small mb-0">
+                        <p class="small mb-2">
                           This graph shows how frequently values fall within
-                          different ranges. A PRNG with a uniform distribution
-                          should produce values that are approximately evenly
-                          distributed across all ranges, resulting in bars of
-                          roughly equal height.
+                          different ranges.
                         </p>
+                        <div
+                          class="alert border small mb-0 py-2 alert-warning"
+                          role="alert"
+                        >
+                          <i class="bi bi-exclamation-square"></i>
+                          A PRNG with a uniform distribution should produce
+                          values that are approximately evenly distributed
+                          across all ranges, resulting in bars of roughly equal
+                          height.
+                          <b>
+                            The orange line represents a perfectly uniform
+                            distribution.
+                          </b>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -259,7 +274,7 @@
                 >
                   <div
                     id="histogram-chart-spinner"
-                    class="spinner-border text-primary"
+                    class="spinner-border text-primary mt-2"
                     role="status"
                   >
                     <span class="visually-hidden">Loading...</span>
@@ -290,12 +305,23 @@
                   <div class="col-lg-8 offset-lg-2 col-12">
                     <div id="cumulative-description" class="collapse mt-2">
                       <div class="border rounded-3 p-3">
-                        <p class="small mb-0">
+                        <p class="small mb-2">
                           This graph shows the cumulative frequency or
-                          probability of values at or below each point. For a
-                          uniformly distributed PRNG, the cumulative probability
-                          should increase approximately linearly from 0 to 1.
+                          probability of values at or below each point.
                         </p>
+                        <div
+                          class="alert border small mb-0 py-2 alert-warning"
+                          role="alert"
+                        >
+                          <i class="bi bi-exclamation-square"></i>
+                          For a uniformly distributed PRNG, the cumulative
+                          probability should increase approximately linearly
+                          from 0 to 1.
+                          <b>
+                            The orange line represents a perfectly uniform
+                            distribution.
+                          </b>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -306,7 +332,7 @@
                 >
                   <div
                     id="cumulative-chart-spinner"
-                    class="spinner-border text-primary"
+                    class="spinner-border text-primary mt-2"
                     role="status"
                   >
                     <span class="visually-hidden">Loading...</span>
