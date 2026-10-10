@@ -5,8 +5,7 @@ node_modules/
 # ==============================================================================
 # TypeScript Output & Build Artifacts
 # ==============================================================================
-# Allow dist for GitHub Pages
-# dist/
+dist/
 lib/
 out-tsc/
 build/
