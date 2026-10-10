@@ -7,9 +7,6 @@ declare global {
   }
 }
 
-// const resultDiv = document.getElementById("result");
-// const generateRands = document.getElementById("generate-rands");
-
 const seedInput = document.getElementById("seed") as HTMLInputElement;
 const resultContainer = document.getElementById("result-container");
 const randsCount = document.getElementById("randoms-count") as HTMLInputElement;
@@ -103,6 +100,7 @@ async function generateRandomNumbersInChunks(
   chunkSize: number,
 ) {
   outArray.length = 0; // reset array
+
   let seed: bigint = BigInt(seedValue);
   if (useRandomSeed) {
     const rands = crypto.getRandomValues(new Uint32Array(1));
