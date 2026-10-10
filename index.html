@@ -193,17 +193,33 @@
                           numbers fall within the corresponding ranges.
                         </p>
                         <div
-                          class="alert border small mb-0 py-2 alert-warning"
+                          class="alert border small mb-2 py-2 alert-warning"
                           role="alert"
                         >
                           <i class="bi bi-exclamation-square"></i>
                           This heatmap shows relationships between consecutive
-                          numbers. It does not establish whether individual
-                          numbers are uniformly distributed.
+                          numbers.
                           <b>
-                            The more this resembles "white noise" the better.
-                            Repeating patterns are bad.
+                            It does not establish whether individual numbers are
+                            uniformly distributed.
                           </b>
+                        </div>
+                        <div
+                          class="alert border small mb-2 py-2 alert-success"
+                          role="alert"
+                        >
+                          <i class="bi bi-hand-thumbs-up"></i>
+                          A uniform-looking scatter of intensity across the
+                          heatmap, without obvious structure is a good sign.
+                        </div>
+                        <div
+                          class="alert border small mb-0 py-2 alert-danger"
+                          role="alert"
+                        >
+                          <i class="bi bi-hand-thumbs-down"></i>
+                          Visible stripes, clusters, repeating patterns, or
+                          empty regions that suggest correlations or
+                          nonuniformity are bad signs.
                         </div>
                       </div>
                     </div>
@@ -251,18 +267,22 @@
                           different ranges.
                         </p>
                         <div
-                          class="alert border small mb-0 py-2 alert-warning"
+                          class="alert border small mb-2 py-2 alert-secondary"
                           role="alert"
                         >
-                          <i class="bi bi-exclamation-square"></i>
+                          <i class="bi bi-check-square"></i>
                           A PRNG with a uniform distribution should produce
                           values that are approximately evenly distributed
                           across all ranges, resulting in bars of roughly equal
                           height.
-                          <b>
-                            The orange line represents a perfectly uniform
-                            distribution.
-                          </b>
+                        </div>
+                        <div
+                          class="alert border small mb-0 py-2 alert-success"
+                          role="alert"
+                        >
+                          <i class="bi bi-hand-thumbs-up"></i>
+                          The orange line represents a perfectly uniform
+                          distribution.
                         </div>
                       </div>
                     </div>
@@ -310,17 +330,21 @@
                           probability of values at or below each point.
                         </p>
                         <div
-                          class="alert border small mb-0 py-2 alert-warning"
+                          class="alert border small mb-2 py-2 alert-secondary"
                           role="alert"
                         >
-                          <i class="bi bi-exclamation-square"></i>
+                          <i class="bi bi-check-square"></i>
                           For a uniformly distributed PRNG, the cumulative
                           probability should increase approximately linearly
                           from 0 to 1.
-                          <b>
-                            The orange line represents a perfectly uniform
-                            distribution.
-                          </b>
+                        </div>
+                        <div
+                          class="alert border small mb-0 py-2 alert-success"
+                          role="alert"
+                        >
+                          <i class="bi bi-hand-thumbs-up"></i>
+                          The orange line represents a perfectly uniform
+                          distribution.
                         </div>
                       </div>
                     </div>
