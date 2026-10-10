@@ -98,12 +98,17 @@ function showTabSpinner(tabElement: HTMLElement | null) {
 async function generateRandomNumbersInChunks(
   outArray: number[],
   useRandomSeed: boolean,
-  seedValue: number,
+  seedValue: number | bigint,
   count: number,
   chunkSize: number,
 ) {
   outArray.length = 0; // reset array
-  const seed = BigInt(useRandomSeed ? Date.now() : seedValue);
+  let seed: bigint = BigInt(seedValue);
+  if (useRandomSeed) {
+    const rands = crypto.getRandomValues(new Uint32Array(1));
+    seed = BigInt(rands[0]);
+  }
+
   const prng = new PRNG(seed);
 
   for (let i = 0; i < count; i += chunkSize) {
