@@ -1,6 +1,12 @@
-async function renderChartForTab(tabId, randoms) {
+import Plotly from "plotly.js-dist-min";
+import "scheduler-polyfill";
+
+export async function renderChartForTab(
+  tabId: string,
+  randoms: number[],
+): Promise<void> {
   const tab = document.getElementById(tabId);
-  if (!tab) {
+  if (!tab || !tab.dataset.chart) {
     return;
   }
 
@@ -8,12 +14,17 @@ async function renderChartForTab(tabId, randoms) {
   if (!chartDisplay) {
     return;
   }
+
+  const chartDisplayRoot = chartDisplay as Plotly.Root;
   if (chartDisplay.hasChildNodes()) {
-    Plotly.Plots.resize(chartDisplay);
+    Plotly.Plots.resize(chartDisplayRoot);
     return;
   }
 
-  const chartSpinner = document.querySelector(tab.dataset.chartSpinner);
+  let chartSpinner: Element | null = null;
+  if (tab.dataset.chartSpinner) {
+    chartSpinner = document.querySelector(tab.dataset.chartSpinner);
+  }
   if (chartSpinner) {
     chartSpinner.removeAttribute("hidden");
   }
@@ -65,7 +76,7 @@ async function renderChartForTab(tabId, randoms) {
       );
 
       await Plotly.newPlot(
-        chartDisplay,
+        chartDisplayRoot,
         [
           {
             type: "heatmap",
@@ -73,7 +84,7 @@ async function renderChartForTab(tabId, randoms) {
             x: Array.from({ length: binCount }, (_, i) => (i + 0.5) / binCount),
             y: Array.from({ length: binCount }, (_, i) => (i + 0.5) / binCount),
             colorbar: {
-              title: "Count",
+              title: { text: "Count" },
             },
             text: hovertext,
             hovertemplate: "%{text}<extra></extra>",
@@ -114,7 +125,7 @@ async function renderChartForTab(tabId, randoms) {
       // END : This is all done just to make the graph look good.
 
       await Plotly.newPlot(
-        chartDisplay,
+        chartDisplayRoot,
         [
           {
             type: "histogram",
@@ -159,7 +170,7 @@ async function renderChartForTab(tabId, randoms) {
 
     case "cumulative-chart-tab": {
       await Plotly.newPlot(
-        chartDisplay,
+        chartDisplayRoot,
         [
           {
             x: randoms,

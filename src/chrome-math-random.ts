@@ -17,42 +17,38 @@
  *
  */
 
-function uint64(n) {
-  return BigInt.asUintN(64, n);
+function uint64(n: number | bigint): bigint {
+  return BigInt.asUintN(64, BigInt(n));
 }
 
-class PRNG {
-  constructor(seed) {
-    if (typeof seed !== "bigint") {
-      throw new Error(`PRNG : seed need to be BigInt! seed=${typeof seed}`);
-    }
+export default class PRNG {
+  #xorshift: XorShift128Plus;
+  #cache: Float64Array;
+  #cacheIndex: number;
+
+  constructor(seed: bigint) {
     if (seed === 0n) {
       throw new Error("PRNG : seed cannot be 0");
     }
-    this.xorshift = new XorShift128Plus(
+    this.#xorshift = new XorShift128Plus(
       this.murmurHash3(uint64(seed)),
       this.murmurHash3(uint64(~seed)),
     );
-    this.cache = new Float64Array(64);
-    this.cacheIndex = 0;
+    this.#cache = new Float64Array(64);
+    this.#cacheIndex = 0;
     this.refillCache();
     // To match Chrome exactly, we need to burn 8 values up front.
     // They appear to call Math.random 8 times durng startup, so we need to burn 8 values.
     this.burn(8);
   }
 
-  burn(count) {
+  burn(count: number): void {
     for (let i = 0; i < count; i++) {
       this.random();
     }
   }
 
-  murmurHash3(h) {
-    if (typeof h !== "bigint") {
-      throw new Error(
-        `PRNG : murmurHash3 : parameter must be BigInt got ${typeof h}`,
-      );
-    }
+  murmurHash3(h: bigint): bigint {
     h ^= h >> 33n;
     h = (h * 0xff51afd7ed558ccdn) & 0xffffffffffffffffn;
     h ^= h >> 33n;
@@ -61,45 +57,43 @@ class PRNG {
     return h;
   }
 
-  refillCache() {
+  refillCache(): void {
     for (let i = 63; i >= 0; i--) {
-      this.cache[i] = this.xorshift.random();
+      this.#cache[i] = this.#xorshift.random();
     }
-    this.cacheIndex = 64;
+    this.#cacheIndex = 64;
   }
 
   random() {
-    if (this.cacheIndex <= 0) {
+    if (this.#cacheIndex <= 0) {
       this.refillCache();
     }
-    this.cacheIndex--;
-    return this.cache[this.cacheIndex];
+    this.#cacheIndex--;
+    return this.#cache[this.#cacheIndex];
   }
 }
 
 class XorShift128Plus {
-  constructor(s0, s1) {
-    if (typeof s0 !== "bigint" || typeof s1 !== "bigint") {
-      throw new Error(
-        `XorShift128Plus : both seeds need to be BigInt! s0=${typeof s0} s1=${typeof s1}`,
-      );
-    }
+  #state0: bigint;
+  #state1: bigint;
+
+  constructor(s0: bigint, s1: bigint) {
     if (s0 === 0n && s1 === 0n) {
       throw new Error("XorShift128Plus : seeds cannot both be 0");
     }
-    this.state0 = s0;
-    this.state1 = s1;
+    this.#state0 = s0;
+    this.#state1 = s1;
   }
 
-  random() {
-    let x = this.state0;
+  random(): number {
+    let x = this.#state0;
     x ^= uint64(x << 23n);
     x ^= uint64(x >> 17n);
-    x ^= uint64(this.state1);
-    x ^= uint64(this.state1 >> 26n);
-    this.state0 = this.state1;
-    this.state1 = uint64(x);
-    const random = uint64(this.state0 + this.state1);
+    x ^= uint64(this.#state1);
+    x ^= uint64(this.#state1 >> 26n);
+    this.#state0 = this.#state1;
+    this.#state1 = uint64(x);
+    const random = uint64(this.#state0 + this.#state1);
     return Number(random >> 11n) / Math.pow(2, 53);
   }
 }

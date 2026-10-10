@@ -1,0 +1,29 @@
+{
+  "name": "xorshift-random-distribution",
+  "version": "1.0.0",
+  "description": "xorshift128p random distribution",
+  "homepage": "https://github.com/matthewoestreich/xorshift-random-distribution#readme",
+  "bugs": {
+    "url": "https://github.com/matthewoestreich/xorshift-random-distribution/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matthewoestreich/xorshift-random-distribution.git"
+  },
+  "license": "MIT",
+  "author": "Matt Oestreich",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@types/plotly.js": "^3.0.15",
+    "vite": "^8.3.4"
+  },
+  "dependencies": {
+    "plotly.js-dist-min": "^4.1.2",
+    "scheduler-polyfill": "^1.3.0"
+  }
+}
