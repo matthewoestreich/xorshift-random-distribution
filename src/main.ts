@@ -100,7 +100,7 @@ optionsForm.addEventListener("submit", async (event) => {
     const chart = document.querySelector(activeTab.dataset.chart) as HTMLElement;
     await renderChart(chart, RANDOMS);
     // If the user cannot see the results, inform them they need to scroll down.
-    if (resultContainer && !isAnyPartOfElementInViewport(resultContainer)) {
+    if (tabContainer && !isAnyPartOfElementInViewport(tabContainer)) {
       showChartsReadyAlert(chartsReadyAlert);
     }
     seedInput.dataset.lastSeed = seedInput.value;
@@ -125,14 +125,12 @@ function isInputValid(input: HTMLInputElement): boolean {
 
 function isFormRequiredInputsValid(form: HTMLFormElement): boolean {
   let isValid = true;
-
   const inputs = form.querySelectorAll("input[required]") as NodeListOf<HTMLInputElement>;
   for (const input of inputs) {
     if (!isInputValid(input)) {
       isValid = false;
     }
   }
-
   return isValid;
 }
 
