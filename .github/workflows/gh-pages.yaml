@@ -19,7 +19,7 @@ jobs:
 
       - name: Install and Build 🔧
         run: |
-          npm run ci
+          npm ci
           npm run build
 
       - name: Deploy to GitHub Pages 🚀
