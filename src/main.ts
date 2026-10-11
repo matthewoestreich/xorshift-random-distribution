@@ -24,28 +24,6 @@ for (const input of requiredInputs) {
   });
 }
 
-for (const tab of tabs) {
-  tab.addEventListener("shown.bs.tab", async () => {
-    if (!tab.dataset.chart) {
-      return;
-    }
-
-    const root = document.querySelector(tab.dataset.chart) as HTMLElement;
-    // Force a resize. If someone clicks on a tab that they've already clicked
-    // on, it is possible the windows was resized in between those clicks.
-    if (root.hasChildNodes()) {
-      Plots.resize(root);
-      return;
-    }
-
-    const spinner = getTabSpinner(tab);
-    spinner?.removeAttribute("hidden");
-    await scheduler.yield();
-    await renderChart(root, RANDOMS);
-    spinner?.setAttribute("hidden", "");
-  });
-}
-
 useRandomSeed.addEventListener("change", () => {
   seedInput.disabled = useRandomSeed.checked;
   if (useRandomSeed.checked) {
@@ -53,14 +31,24 @@ useRandomSeed.addEventListener("change", () => {
   }
 });
 
+for (const tab of tabs) {
+  tab.addEventListener("shown.bs.tab", async () => {
+    await handleTabShown(tab);
+  });
+}
+
 optionsForm.addEventListener("submit", async (event) => {
+  await handleFormSubmit(optionsForm, event);
+});
+
+async function handleFormSubmit(form: HTMLFormElement, event: Event) {
   event.preventDefault();
   event.stopPropagation();
 
   // Helps us handle input validation
-  optionsForm.classList.add("has-been-submitted");
+  form.classList.add("has-been-submitted");
 
-  if (!isFormRequiredInputsValid(optionsForm)) {
+  if (!isFormRequiredInputsValid(form)) {
     return;
   }
 
@@ -81,10 +69,9 @@ optionsForm.addEventListener("submit", async (event) => {
     seedInput.value = String(seed);
   }
 
-  const activeTab = document.querySelector("#result-tabs .nav-link.active") as HTMLElement;
-
   clearRenderedCharts(charts);
 
+  const activeTab = document.querySelector("#result-tabs .nav-link.active") as HTMLElement;
   const tabSpinner = getTabSpinner(activeTab);
   tabSpinner?.removeAttribute("hidden");
   resultContainer?.removeAttribute("hidden");
@@ -99,18 +86,36 @@ optionsForm.addEventListener("submit", async (event) => {
   if (activeTab && activeTab.dataset.chart) {
     const chart = document.querySelector(activeTab.dataset.chart) as HTMLElement;
     await renderChart(chart, RANDOMS);
-
     // If the user cannot see the results, inform them they need to scroll down.
     if (tabContainer && !isAnyPartOfElementInViewport(tabContainer)) {
       showChartsReadyAlert(chartsReadyAlert);
     }
-
     seedInput.dataset.lastSeed = seedInput.value;
     numRandsToGen.dataset.lastCount = String(count);
   }
 
   tabSpinner?.setAttribute("hidden", ""); // Hide spinner
-});
+}
+
+async function handleTabShown(tab: HTMLElement) {
+  if (!tab.dataset.chart) {
+    return;
+  }
+
+  const root = document.querySelector(tab.dataset.chart) as HTMLElement;
+  // Force a resize. If someone clicks on a tab that they've already clicked
+  // on, it is possible the windows was resized in between those clicks.
+  if (root.hasChildNodes()) {
+    Plots.resize(root);
+    return;
+  }
+
+  const spinner = getTabSpinner(tab);
+  spinner?.removeAttribute("hidden");
+  await scheduler.yield();
+  await renderChart(root, RANDOMS);
+  spinner?.setAttribute("hidden", "");
+}
 
 function isInputValid(input: HTMLInputElement): boolean {
   let isValid = true;
