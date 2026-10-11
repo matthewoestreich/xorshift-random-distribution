@@ -46,8 +46,8 @@ for (const tab of tabs) {
   });
 }
 
-useRandomSeed?.addEventListener("change", (_event) => {
-  const isChecked = useRandomSeed.checked; // event.target.checked;
+useRandomSeed?.addEventListener("change", () => {
+  const isChecked = useRandomSeed.checked;
   seedInput.disabled = isChecked;
   seedInput.value = "";
 });
