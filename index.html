@@ -41,7 +41,7 @@
       <div class="row g-4">
         <main class="col-lg-8 offset-lg-2">
           <h2>Implementation</h2>
-          <p class="px-4">
+          <p class="px-0 px-lg-4">
             We use an exact clone of the <code>Math.random</code> implementation
             used by Chrome
             <code>v154.0.8037.98 (Official Build) (x86_64)</code>. The source
@@ -50,17 +50,18 @@
               href="https://github.com/matthewoestreich/xorshift-random-distribution/blob/a9e7290c45b20aa5ca014cf4aece950b97de9c74/src/chrome-math-random.ts"
               target="_blank"
               rel="noopener noreferrer"
-              >here</a
-            >.
+            >
+              here.
+            </a>
           </p>
           <div class="pt-4">
             <h2>Options</h2>
-            <div class="alert mb-0 py-0" role="alert">
+            <div class="alert mb-0 py-0 px-lg-4 px-0" role="alert">
               <i class="bi bi-shuffle"></i>
               If random seeding is enabled, a new seed will be created each time
               you generate random numbers.
             </div>
-            <div class="alert mb-0 py-0" role="alert">
+            <div class="alert mb-0 py-0 px-lg-4 px-0" role="alert">
               <i class="bi bi-speedometer2"></i>
               The maximum amount of random numbers you can generate is
               5,000,000.
