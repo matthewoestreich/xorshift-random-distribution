@@ -77,10 +77,12 @@ export async function renderChart(root: HTMLElement, randoms: number[]): Promise
       // START : This is all done just to make the graph look good.
       const ideal = randoms.length / binCount;
       const counts = Array(binCount).fill(0);
+
       for (const value of randoms) {
         const index = Math.min(Math.floor(value * binCount), binCount - 1);
         if (index >= 0) counts[index]++;
       }
+
       const lowestCount = Math.min(...counts);
       const highestCount = Math.max(...counts);
       const buffer = Math.ceil(randoms.length * 0.001);
@@ -107,7 +109,7 @@ export async function renderChart(root: HTMLElement, randoms: number[]): Promise
             hovertemplate: "Range: %{x}<br>" + "Count: %{y}<extra></extra>",
           },
           {
-            type: "scatter",
+            type: "scattergl",
             mode: "lines",
             x: [0, 1],
             y: [ideal, ideal],
@@ -147,7 +149,7 @@ export async function renderChart(root: HTMLElement, randoms: number[]): Promise
           {
             x: [0, 1],
             y: [0, 1],
-            type: "scatter",
+            type: "scattergl",
             mode: "lines",
             name: "Perfect Uniform Distribution",
             line: { dash: "solid" },
