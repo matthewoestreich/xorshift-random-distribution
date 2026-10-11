@@ -44,8 +44,8 @@ for (const tab of tabs) {
     }
 
     const spinner = getTabSpinner(tab);
-
     spinner?.removeAttribute("hidden");
+    await scheduler.yield();
     await renderChartForTab(root, RANDOMS);
     spinner?.setAttribute("hidden", "");
   });
@@ -142,7 +142,6 @@ function getTabSpinner(tab: HTMLElement): HTMLDivElement | null {
   return document.querySelector(tab.dataset.chartSpinner);
 }
 
-// Gets N cryptographically secure random numbers, where N = `count`.
 function getCryptoRandomNumber(): number {
   return crypto.getRandomValues(new Uint32Array(1))[0];
 }
