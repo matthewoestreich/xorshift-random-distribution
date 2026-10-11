@@ -67,7 +67,25 @@
               </div>
             </div>
             <form id="options-form" class="row" novalidate>
-              <div class="col-xl-6 col-12 order-2 order-xl-1 mt-2 mt-xl-0">
+              <div class="col-xl-6 col-12 mt-2 mt-xl-0">
+                <div class="form-floating">
+                  <input
+                    id="randoms-count"
+                    type="number"
+                    name="randoms-count"
+                    min="0"
+                    max="5000000"
+                    value="10000"
+                    class="form-control"
+                    autocomplete="off"
+                    placeholder="Number of values to generate"
+                    required
+                  />
+                  <label for="randoms-count" class="form-label"> Number of values to generate </label>
+                  <div class="invalid-feedback">Must be a number less than or equal to the max.</div>
+                </div>
+              </div>
+              <div class="col-xl-6 col-12 mt-2 mt-xl-0 order-1 order-xl-2">
                 <div class="form-floating">
                   <input
                     id="seed"
@@ -88,26 +106,9 @@
                     class="form-check-input mt-1"
                     value=""
                     autocomplete="off"
+                    tabindex="-1"
                   />
                   <label class="form-check-label" for="use-random-seed"> Use random seed </label>
-                </div>
-              </div>
-              <div class="col-xl-6 col-12 mt-2 mt-xl-0 order-1 order-xl-2">
-                <div class="form-floating">
-                  <input
-                    id="randoms-count"
-                    type="number"
-                    name="randoms-count"
-                    min="0"
-                    max="5000000"
-                    value="10000"
-                    class="form-control"
-                    autocomplete="off"
-                    placeholder="Number of values to generate"
-                    required
-                  />
-                  <label for="randoms-count" class="form-label"> Number of values to generate </label>
-                  <div class="invalid-feedback">Must be a number less than or equal to the max.</div>
                 </div>
               </div>
             </form>
