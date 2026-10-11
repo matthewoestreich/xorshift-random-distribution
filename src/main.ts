@@ -99,7 +99,10 @@ optionsForm.addEventListener("submit", async (event) => {
   if (activeTab && activeTab.dataset.chart) {
     const chart = document.querySelector(activeTab.dataset.chart) as HTMLElement;
     await renderChart(chart, RANDOMS);
-    showChartsReadyAlert(chartsReadyAlert);
+    // If the user cannot see the results, inform them they need to scroll down.
+    if (resultContainer && !isAnyPartOfElementInViewport(resultContainer)) {
+      showChartsReadyAlert(chartsReadyAlert);
+    }
     seedInput.dataset.lastSeed = seedInput.value;
     numRandsToGen.dataset.lastCount = String(count);
   }
@@ -182,4 +185,14 @@ function showChartsReadyAlert(chartsReadyAlertEl: HTMLDivElement): void {
   }
   chartsReadyAlertEl.removeAttribute("hidden");
   chartsReadyAlertEl.dataset.hasShown = "true";
+}
+
+function isAnyPartOfElementInViewport(element: HTMLElement): boolean {
+  const bounds = element.getBoundingClientRect();
+  return (
+    bounds.top < (window.innerHeight || document.documentElement.clientHeight) &&
+    bounds.bottom > 0 &&
+    bounds.left < (window.innerWidth || document.documentElement.clientWidth) &&
+    bounds.right > 0
+  );
 }

@@ -6,6 +6,7 @@ node_modules/
 # TypeScript Output & Build Artifacts
 # ==============================================================================
 dist/
+docs/
 lib/
 out-tsc/
 build/
