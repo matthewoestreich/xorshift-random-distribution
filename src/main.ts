@@ -49,7 +49,7 @@ for (const tab of tabs) {
 useRandomSeed.addEventListener("change", () => {
   seedInput.disabled = useRandomSeed.checked;
   if (useRandomSeed.checked) {
-    seedInput.value = String(getCryptoRandomNumber());
+    seedInput.value = String(getCryptoRandomBigInt());
   }
 });
 
@@ -77,7 +77,7 @@ optionsForm.addEventListener("submit", async (event) => {
     if (!useRandomSeed.checked) {
       return;
     }
-    seed = BigInt(getCryptoRandomNumber());
+    seed = getCryptoRandomBigInt();
     seedInput.value = String(seed);
   }
 
@@ -99,10 +99,12 @@ optionsForm.addEventListener("submit", async (event) => {
   if (activeTab && activeTab.dataset.chart) {
     const chart = document.querySelector(activeTab.dataset.chart) as HTMLElement;
     await renderChart(chart, RANDOMS);
+
     // If the user cannot see the results, inform them they need to scroll down.
     if (tabContainer && !isAnyPartOfElementInViewport(tabContainer)) {
       showChartsReadyAlert(chartsReadyAlert);
     }
+
     seedInput.dataset.lastSeed = seedInput.value;
     numRandsToGen.dataset.lastCount = String(count);
   }
@@ -141,8 +143,8 @@ function getTabSpinner(tab: HTMLElement): HTMLDivElement | null {
   return document.querySelector(tab.dataset.chartSpinner);
 }
 
-function getCryptoRandomNumber(): number {
-  return crypto.getRandomValues(new Uint32Array(1))[0];
+function getCryptoRandomBigInt(): bigint {
+  return crypto.getRandomValues(new BigUint64Array(1))[0];
 }
 
 async function generateRandomNumbersInChunks(params: {
