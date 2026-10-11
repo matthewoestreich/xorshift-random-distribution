@@ -11,7 +11,11 @@ const seedInput = document.getElementById("seed") as HTMLInputElement;
 const resultContainer = document.getElementById("result-container");
 const randsCount = document.getElementById("randoms-count") as HTMLInputElement;
 const optionsForm = document.getElementById("options-form") as HTMLFormElement;
-const tabContainer = document.getElementById("result-tabs");
+const tabContainer = document.getElementById("result-tabs") as HTMLUListElement;
+
+const requiredInputs = optionsForm.querySelectorAll(
+  "input[required]",
+) as NodeListOf<HTMLInputElement>;
 
 const useRandomSeed = document.getElementById(
   "use-random-seed",
@@ -29,23 +33,30 @@ const tabs = tabContainer?.querySelectorAll(
   'button[data-bs-toggle="tab"]',
 ) as NodeListOf<HTMLElement>;
 
-if (seedInput) {
-  seedInput.value = Date.now().toString();
+const RANDOMS: number[] = [];
+
+for (const input of requiredInputs) {
+  input.addEventListener("input", () => isInputValid(input));
 }
 
-const randoms: number[] = [];
+for (const tab of tabs) {
+  tab.addEventListener("shown.bs.tab", async (event) => {
+    const activeTabId = (event.target as HTMLElement)?.id;
+    await renderChartForTab(activeTabId, RANDOMS);
+  });
+}
 
 useRandomSeed?.addEventListener("change", (_event) => {
   const isChecked = useRandomSeed.checked; // event.target.checked;
   seedInput.disabled = isChecked;
-  seedInput.value = isChecked ? "" : Date.now().toString();
+  seedInput.value = "";
 });
 
 optionsForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
   event.stopPropagation();
 
-  if (!isFormValid(optionsForm)) {
+  if (!isFormRequiredInputsValid(optionsForm)) {
     return;
   }
 
@@ -58,26 +69,55 @@ optionsForm?.addEventListener("submit", async (event) => {
   showTabSpinner(activeTab);
   resultContainer?.removeAttribute("hidden");
 
-  await generateRandomNumbersInChunks(
-    randoms,
-    useRandomSeed.checked,
-    Number(seedInput.value),
-    Number(randsCount.value),
-    10_000,
-  );
+  let seed = BigInt(seedInput.value);
+  if (useRandomSeed.checked) {
+    seed = BigInt(getCryptoRandomNumbers(1)[0]);
+    seedInput.value = String(seed);
+  }
+
+  await generateRandomNumbersInChunks({
+    seed,
+    count: Number(randsCount.value),
+    chunkSize: 10_000,
+    outArray: RANDOMS,
+  });
 
   if (activeTab) {
-    renderChartForTab(activeTab.id, randoms);
-    showChartReadyText(chartsReadyText);
+    renderChartForTab(activeTab.id, RANDOMS);
+    showChartReadyText({ chartsReadyText, timeoutMs: 5000 });
   }
 });
 
-tabs?.forEach((tab) => {
-  tab.addEventListener("shown.bs.tab", async (event) => {
-    const activeTabId = (event.target as Element)?.id;
-    await renderChartForTab(activeTabId, randoms);
-  });
-});
+function isInputValid(input: HTMLInputElement): boolean {
+  let isValid = true;
+
+  if (!input.checkValidity()) {
+    isValid = false;
+    input.classList.add("is-invalid");
+    input.classList.remove("is-valid");
+  } else {
+    input.classList.remove("is-invalid");
+    input.classList.add("is-valid");
+  }
+
+  return isValid;
+}
+
+function isFormRequiredInputsValid(form: HTMLFormElement): boolean {
+  const inputs = form.querySelectorAll(
+    "input[required]",
+  ) as NodeListOf<HTMLInputElement>;
+
+  let isValid = true;
+
+  for (const input of inputs) {
+    if (!isInputValid(input)) {
+      isValid = false;
+    }
+  }
+
+  return isValid;
+}
 
 function showTabSpinner(tabElement: HTMLElement | null) {
   if (!tabElement) {
@@ -92,28 +132,27 @@ function showTabSpinner(tabElement: HTMLElement | null) {
   }
 }
 
-async function generateRandomNumbersInChunks(
-  outArray: number[],
-  useRandomSeed: boolean,
-  seedValue: number | bigint,
-  count: number,
-  chunkSize: number,
-) {
-  outArray.length = 0; // reset array
+// Gets N cryptographically secure random numbers, where N = `count`.
+function getCryptoRandomNumbers(count: number): Uint32Array {
+  const buff = new Uint32Array(count);
+  crypto.getRandomValues(buff);
+  return buff;
+}
 
-  let seed: bigint = BigInt(seedValue);
-  if (useRandomSeed) {
-    const rands = crypto.getRandomValues(new Uint32Array(1));
-    seed = BigInt(rands[0]);
-  }
+async function generateRandomNumbersInChunks(params: {
+  seed: number | bigint;
+  count: number;
+  chunkSize: number;
+  outArray: number[];
+}) {
+  params.outArray.length = 0; // reset array
+  const prng = new PRNG(BigInt(params.seed));
 
-  const prng = new PRNG(seed);
-
-  for (let i = 0; i < count; i += chunkSize) {
-    const size = Math.min(chunkSize, count - i);
+  for (let i = 0; i < params.count; i += params.chunkSize) {
+    const size = Math.min(params.chunkSize, params.count - i);
 
     for (let j = 0; j < size; j++) {
-      outArray.push(prng.random());
+      params.outArray.push(prng.random());
     }
 
     // Let the browser process pending UI work.
@@ -129,25 +168,23 @@ function normalizeRandomsCount(inputElement: HTMLInputElement) {
   }
 }
 
-function isFormValid(formElement: HTMLFormElement) {
-  const isValid = formElement.checkValidity();
-  formElement.classList.add("was-validated");
-  return isValid;
-}
-
-// charts : array of elements. each element should be root element of plotly chart.
 function resetRenderedCharts(charts: NodeListOf<HTMLElement>) {
   for (const chart of charts) {
     chart.replaceChildren();
   }
 }
 
-function showChartReadyText(chartsReadyText: HTMLDivElement) {
+// Show text letting user know that charts are ready
+// and they need to scroll down.
+function showChartReadyText(params: {
+  chartsReadyText: HTMLDivElement;
+  timeoutMs: number;
+}) {
   if (!window.chartReadyTextTimer) {
     chartsReadyText.removeAttribute("hidden");
     window.chartReadyTextTimer = setTimeout(() => {
       chartsReadyText.setAttribute("hidden", "");
       clearTimeout(window.chartReadyTextTimer);
-    }, 3500);
+    }, params.timeoutMs);
   }
 }
