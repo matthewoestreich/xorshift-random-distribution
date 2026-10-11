@@ -1,7 +1,6 @@
 import Plotly from "plotly.js-dist-min";
-import "scheduler-polyfill";
 
-export async function renderChartForTab(root: HTMLElement, randoms: number[]): Promise<void> {
+export async function renderChart(root: HTMLElement, randoms: number[]): Promise<void> {
   const dragmode = "pan";
   const responsive = true;
   const margin = {

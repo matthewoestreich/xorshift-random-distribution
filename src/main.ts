@@ -1,14 +1,7 @@
 import { Plots } from "plotly.js-dist-min";
-import { renderChartForTab } from "./charts.ts";
+import "scheduler-polyfill";
+import { renderChart } from "./charts.ts";
 import PRNG from "./chrome-math-random.ts";
-
-declare global {
-  interface Window {
-    chartReadyTextTimer: number | undefined;
-    lastSeed: bigint | undefined;
-    lastRandomsCount: number | undefined;
-  }
-}
 
 const seedInput = document.getElementById("seed") as HTMLInputElement;
 const resultContainer = document.getElementById("result-container");
@@ -16,10 +9,10 @@ const optionsForm = document.getElementById("options-form") as HTMLFormElement;
 const tabContainer = document.getElementById("result-tabs") as HTMLUListElement;
 const numRandsToGen = document.getElementById("randoms-count") as HTMLInputElement;
 const useRandomSeed = document.getElementById("use-random-seed") as HTMLInputElement;
-const chartsReadyText = document.getElementById("charts-ready-text") as HTMLDivElement;
+const chartsReadyAlert = document.getElementById("charts-ready-alert") as HTMLDivElement;
 const charts = document.querySelectorAll(".chart-container") as NodeListOf<HTMLElement>;
 const requiredInputs = optionsForm.querySelectorAll("input[required]") as NodeListOf<HTMLInputElement>;
-const tabs = tabContainer?.querySelectorAll('button[data-bs-toggle="tab"]') as NodeListOf<HTMLElement>;
+const tabs = tabContainer.querySelectorAll('button[data-bs-toggle="tab"]') as NodeListOf<HTMLElement>;
 
 const RANDOMS: number[] = [];
 
@@ -38,6 +31,8 @@ for (const tab of tabs) {
     }
 
     const root = document.querySelector(tab.dataset.chart) as HTMLElement;
+    // Force a resize. If someone clicks on a tab that they've already clicked
+    // on, it is possible the windows was resized in between those clicks.
     if (root.hasChildNodes()) {
       Plots.resize(root);
       return;
@@ -46,15 +41,14 @@ for (const tab of tabs) {
     const spinner = getTabSpinner(tab);
     spinner?.removeAttribute("hidden");
     await scheduler.yield();
-    await renderChartForTab(root, RANDOMS);
+    await renderChart(root, RANDOMS);
     spinner?.setAttribute("hidden", "");
   });
 }
 
 useRandomSeed.addEventListener("change", () => {
-  const isChecked = useRandomSeed.checked;
-  seedInput.disabled = isChecked;
-  if (isChecked) {
+  seedInput.disabled = useRandomSeed.checked;
+  if (useRandomSeed.checked) {
     seedInput.value = String(getCryptoRandomNumber());
   }
 });
@@ -73,10 +67,13 @@ optionsForm.addEventListener("submit", async (event) => {
   normalizeRandomsCount(numRandsToGen);
 
   let seed = BigInt(seedInput.value);
-  const numRands = Number(numRandsToGen.value);
+  const count = Number(numRandsToGen.value);
+  const lastSeed = BigInt(seedInput.dataset.lastSeed || 0);
+  const lastCount = Number(numRandsToGen.dataset.lastCount || 0);
 
-  if (window.lastSeed === seed && window.lastRandomsCount === numRands) {
-    // Dont waste compute if we already rendered these options.
+  // If someone submits a form with the same values we've aleady seen,
+  // we don't need to render charts since they're already rendered.
+  if (lastSeed === seed && lastCount === count) {
     if (!useRandomSeed.checked) {
       return;
     }
@@ -94,16 +91,17 @@ optionsForm.addEventListener("submit", async (event) => {
 
   await generateRandomNumbersInChunks({
     seed,
-    count: Number(numRandsToGen.value),
+    count,
     chunkSize: 10_000,
     outArray: RANDOMS,
   });
 
   if (activeTab && activeTab.dataset.chart) {
-    await renderChartForTab(document.querySelector(activeTab.dataset.chart) as HTMLElement, RANDOMS);
-    showChartReadyText({ chartsReadyText, timeoutMs: 5000 });
-    window.lastSeed = seed;
-    window.lastRandomsCount = numRands;
+    const chart = document.querySelector(activeTab.dataset.chart) as HTMLElement;
+    await renderChart(chart, RANDOMS);
+    showChartsReadyAlert(chartsReadyAlert);
+    seedInput.dataset.lastSeed = seedInput.value;
+    numRandsToGen.dataset.lastCount = String(count);
   }
 
   tabSpinner?.setAttribute("hidden", ""); // Hide spinner
@@ -168,7 +166,7 @@ function normalizeRandomsCount(inputElement: HTMLInputElement) {
   let n = Number(inputElement.value);
   if (n % 2 !== 0) {
     n++;
-    inputElement.value = n.toString();
+    inputElement.value = String(n);
   }
 }
 
@@ -178,13 +176,10 @@ function clearRenderedCharts(charts: NodeListOf<HTMLElement>) {
   }
 }
 
-// Show text letting user know that charts are ready and they need to scroll down.
-function showChartReadyText(params: { chartsReadyText: HTMLDivElement; timeoutMs: number }) {
-  if (!window.chartReadyTextTimer) {
-    chartsReadyText.removeAttribute("hidden");
-    window.chartReadyTextTimer = setTimeout(() => {
-      chartsReadyText.setAttribute("hidden", "");
-      clearTimeout(window.chartReadyTextTimer);
-    }, params.timeoutMs);
+function showChartsReadyAlert(chartsReadyAlertEl: HTMLDivElement): void {
+  if (Boolean(chartsReadyAlertEl.dataset.hasShown)) {
+    return;
   }
+  chartsReadyAlertEl.removeAttribute("hidden");
+  chartsReadyAlertEl.dataset.hasShown = "true";
 }
