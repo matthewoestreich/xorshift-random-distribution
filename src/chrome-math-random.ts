@@ -30,10 +30,7 @@ export default class PRNG {
     if (seed === 0n) {
       throw new Error("PRNG : seed cannot be 0");
     }
-    this.#xorshift = new XorShift128Plus(
-      this.murmurHash3(uint64(seed)),
-      this.murmurHash3(uint64(~seed)),
-    );
+    this.#xorshift = new XorShift128Plus(this.murmurHash3(uint64(seed)), this.murmurHash3(uint64(~seed)));
     this.#cache = new Float64Array(64);
     this.#cacheIndex = 0;
     this.refillCache();

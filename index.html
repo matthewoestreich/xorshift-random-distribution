@@ -66,11 +66,7 @@
               The maximum amount of random numbers you can generate is
               5,000,000.
             </div>
-            <form
-              id="options-form"
-              class="row pt-2 needs-validation"
-              novalidate
-            >
+            <form id="options-form" class="row pt-2" novalidate>
               <div class="col-lg-6 col-12">
                 <div class="form-floating">
                   <input
@@ -84,7 +80,7 @@
                   />
                   <label for="seed" class="form-label">Seed</label>
                   <div class="invalid-feedback">
-                    Seed must be a number greater than 0.
+                    Must be a number greater than 0.
                   </div>
                 </div>
                 <div class="form-check">
@@ -110,14 +106,15 @@
                     max="5000000"
                     value="10000"
                     class="form-control"
-                    placeholder="Count"
+                    autocomplete="off"
+                    placeholder="Number of values to generate"
                     required
                   />
                   <label for="randoms-count" class="form-label">
                     Number of values to generate
                   </label>
                   <div class="invalid-feedback">
-                    Count must be a number less than or equal to the max.
+                    Must be a number less than or equal to the max.
                   </div>
                 </div>
               </div>

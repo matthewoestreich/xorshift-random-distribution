@@ -1,36 +1,7 @@
 import Plotly from "plotly.js-dist-min";
 import "scheduler-polyfill";
 
-export async function renderChartForTab(
-  tabId: string,
-  randoms: number[],
-): Promise<void> {
-  const tab = document.getElementById(tabId);
-  if (!tab || !tab.dataset.chart) {
-    return;
-  }
-
-  const chartDisplay = document.querySelector(tab.dataset.chart);
-  if (!chartDisplay) {
-    return;
-  }
-
-  const chartDisplayRoot = chartDisplay as Plotly.Root;
-  if (chartDisplay.hasChildNodes()) {
-    Plotly.Plots.resize(chartDisplayRoot);
-    return;
-  }
-
-  let chartSpinner: Element | null = null;
-  if (tab.dataset.chartSpinner) {
-    chartSpinner = document.querySelector(tab.dataset.chartSpinner);
-  }
-  if (chartSpinner) {
-    chartSpinner.removeAttribute("hidden");
-  }
-
-  await scheduler.yield();
-
+export async function renderChartForTab(root: HTMLElement, randoms: number[]): Promise<void> {
   const dragmode = "pan";
   const responsive = true;
   const margin = {
@@ -40,18 +11,13 @@ export async function renderChartForTab(
     r: 10,
   };
 
-  switch (tabId) {
-    case "heatmap-chart-tab": {
+  switch (root.id) {
+    case "heatmap-chart": {
       const pairCount = Math.max(0, randoms.length - 1);
-
-      const binCount = Math.max(
-        1,
-        Math.min(200, Math.floor(Math.sqrt(pairCount))),
-      );
-
-      const bins = Array.from({ length: binCount }, () =>
-        new Array(binCount).fill(0),
-      );
+      const targetBinCount = Math.min(200, Math.floor(Math.sqrt(pairCount)));
+      const binCount = Math.max(1, targetBinCount);
+      const uniformBinSize = 1 / binCount;
+      const bins = Array.from({ length: binCount }, () => new Array(binCount).fill(0));
 
       for (let i = 0; i < pairCount; i++) {
         const x = Math.min(binCount - 1, Math.floor(randoms[i] * binCount));
@@ -59,13 +25,12 @@ export async function renderChartForTab(
         bins[y][x]++;
       }
 
-      const binSize = 1 / binCount;
       const hovertext = Array.from({ length: binCount }, (_, y) =>
         Array.from({ length: binCount }, (_, x) => {
-          const xStart = x * binSize;
-          const xEnd = (x + 1) * binSize;
-          const yStart = y * binSize;
-          const yEnd = (y + 1) * binSize;
+          const xStart = x * uniformBinSize;
+          const xEnd = (x + 1) * uniformBinSize;
+          const yStart = y * uniformBinSize;
+          const yEnd = (y + 1) * uniformBinSize;
 
           return (
             `X: ${xStart.toFixed(4)}–${xEnd.toFixed(4)}` +
@@ -76,7 +41,7 @@ export async function renderChartForTab(
       );
 
       await Plotly.newPlot(
-        chartDisplayRoot,
+        root,
         [
           {
             type: "heatmap",
@@ -107,7 +72,7 @@ export async function renderChartForTab(
       break;
     }
 
-    case "histogram-chart-tab": {
+    case "histogram-chart": {
       const binCount = 10;
 
       // START : This is all done just to make the graph look good.
@@ -125,7 +90,7 @@ export async function renderChartForTab(
       // END : This is all done just to make the graph look good.
 
       await Plotly.newPlot(
-        chartDisplayRoot,
+        root,
         [
           {
             type: "histogram",
@@ -168,9 +133,9 @@ export async function renderChartForTab(
       break;
     }
 
-    case "cumulative-chart-tab": {
+    case "cumulative-chart": {
       await Plotly.newPlot(
-        chartDisplayRoot,
+        root,
         [
           {
             x: randoms,
@@ -178,9 +143,7 @@ export async function renderChartForTab(
             histnorm: "probability",
             cumulative: { enabled: true },
             hovertemplate:
-              "Random Value: %{x:.4f}<br>" +
-              "Cumulative Probability: %{y:.2%}" +
-              "<extra></extra>",
+              "Random Value: %{x:.4f}<br>" + "Cumulative Probability: %{y:.2%}" + "<extra></extra>",
           },
           {
             x: [0, 1],
@@ -202,9 +165,5 @@ export async function renderChartForTab(
       );
       break;
     }
-  }
-
-  if (chartSpinner) {
-    chartSpinner.setAttribute("hidden", "");
   }
 }
