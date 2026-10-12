@@ -30,12 +30,17 @@ export default class PRNG {
     if (seed === 0n) {
       throw new Error("PRNG : seed cannot be 0");
     }
-    this.#xorshift = new XorShift128Plus(this.murmurHash3(uint64(seed)), this.murmurHash3(uint64(~seed)));
+
+    // https://source.chromium.org/chromium/_/chromium/v8/v8/+/main:src/base/utils/random-number-generator.cc;l=218-223;drc=0596ead5b04f5988d7742c2a4559637a4f81b849;bpv=0;bpt=0
+    const s1 = this.murmurHash3(uint64(seed));
+    const s2 = this.murmurHash3(uint64(~seed));
+
+    this.#xorshift = new XorShift128Plus(s1, s2);
     this.#cache = new Float64Array(64);
     this.#cacheIndex = 0;
     this.refillCache();
-    // To match Chrome exactly, we need to burn 8 values up front.
-    // They appear to call Math.random 8 times durng startup, so we need to burn 8 values.
+    // Chrome appears to call Math.random 8 times durng startup,
+    // therefore we need to burn 8 values up front.
     this.burn(8);
   }
 
@@ -45,6 +50,7 @@ export default class PRNG {
     }
   }
 
+  // https://source.chromium.org/chromium/_/chromium/v8/v8/+/main:src/base/utils/random-number-generator.cc;l=226-233;drc=0596ead5b04f5988d7742c2a4559637a4f81b849;bpv=0;bpt=0
   murmurHash3(h: bigint): bigint {
     h ^= h >> 33n;
     h = (h * 0xff51afd7ed558ccdn) & 0xffffffffffffffffn;
@@ -82,7 +88,10 @@ class XorShift128Plus {
     this.#state1 = s1;
   }
 
+  // We combined the XorShift128 and ToDouble methods that Chrome uses.
   random(): number {
+    // XorShift128
+    // https://source.chromium.org/chromium/_/chromium/v8/v8/+/main:src/base/utils/random-number-generator.h;l=123-132;drc=7309e590e5fde42066b79cb9859eb85b61978075;bpv=0;bpt=0
     let x = this.#state0;
     x ^= uint64(x << 23n);
     x ^= uint64(x >> 17n);
@@ -90,6 +99,8 @@ class XorShift128Plus {
     x ^= uint64(this.#state1 >> 26n);
     this.#state0 = this.#state1;
     this.#state1 = uint64(x);
+    // ToDouble:
+    // https://source.chromium.org/chromium/_/chromium/v8/v8/+/main:src/base/utils/random-number-generator.h;l=112-119;drc=7309e590e5fde42066b79cb9859eb85b61978075;bpv=0;bpt=0
     const random = uint64(this.#state0 + this.#state1);
     return Number(random >> 11n) / Math.pow(2, 53);
   }
