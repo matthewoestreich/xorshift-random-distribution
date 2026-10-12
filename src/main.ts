@@ -1,6 +1,6 @@
 import { Plots } from "plotly.js-dist-min";
 import "scheduler-polyfill";
-import { renderChart } from "./charts.ts";
+import renderChart from "./charts.ts";
 import PRNG from "./chrome-math-random.ts";
 
 const seedInput = document.getElementById("seed") as HTMLInputElement;
@@ -16,6 +16,10 @@ const tabs = tabContainer.querySelectorAll('button[data-bs-toggle="tab"]') as No
 
 const RANDOMS: number[] = [];
 
+seedInput.addEventListener("input", () => {
+  validateInputFitsIn64Bits(seedInput);
+});
+
 for (const input of requiredInputs) {
   input.addEventListener("input", () => {
     if (optionsForm.classList.contains("has-been-submitted")) {
@@ -26,7 +30,7 @@ for (const input of requiredInputs) {
 
 useRandomSeed.addEventListener("change", () => {
   seedInput.disabled = useRandomSeed.checked;
-  if (useRandomSeed.checked) {
+  if (useRandomSeed.checked && seedInput.value === "") {
     seedInput.value = String(getCryptoRandomBigInt());
   }
 });
@@ -44,57 +48,74 @@ optionsForm.addEventListener("submit", async (event) => {
 async function handleFormSubmit(form: HTMLFormElement, event: Event) {
   event.preventDefault();
   event.stopPropagation();
-
   // Helps us handle input validation
   form.classList.add("has-been-submitted");
 
+  validateInputFitsIn64Bits(seedInput);
   if (!isFormRequiredInputsValid(form)) {
     return;
   }
 
   normalizeRandomsCount(numRandsToGen);
 
-  let seed = BigInt(seedInput.value);
-  const count = Number(numRandsToGen.value);
-  const lastSeed = BigInt(seedInput.dataset.lastSeed || 0);
-  const lastCount = Number(numRandsToGen.dataset.lastCount || 0);
+  const submission = getSubmissionParameters({
+    seedInput,
+    countInput: numRandsToGen,
+    useRandomSeed,
+  });
 
-  // If someone submits a form with the same values we've aleady seen,
-  // we don't need to render charts since they're already rendered.
-  if (lastSeed === seed && lastCount === count) {
-    if (!useRandomSeed.checked) {
-      return;
-    }
-    seed = getCryptoRandomBigInt();
-    seedInput.value = String(seed);
+  if (!submission) {
+    return;
   }
 
   clearRenderedCharts(charts);
 
   const activeTab = document.querySelector("#result-tabs .nav-link.active") as HTMLElement;
   const tabSpinner = getTabSpinner(activeTab);
+
   tabSpinner?.removeAttribute("hidden");
   resultContainer?.removeAttribute("hidden");
 
-  await generateRandomNumbersInChunks({
-    seed,
-    count,
-    chunkSize: 10_000,
-    outArray: RANDOMS,
-  });
+  try {
+    await generateRandomNumbersInChunks({
+      seed: submission.seed,
+      count: submission.count,
+      chunkSize: 10_000,
+      outArray: RANDOMS,
+    });
 
-  if (activeTab && activeTab.dataset.chart) {
-    const chart = document.querySelector(activeTab.dataset.chart) as HTMLElement;
-    await renderChart(chart, RANDOMS);
-    // If the user cannot see the results, inform them they need to scroll down.
-    if (tabContainer && !isAnyPartOfElementInViewport(tabContainer)) {
-      showChartsReadyAlert(chartsReadyAlert);
+    if (activeTab && activeTab.dataset.chart) {
+      const chart = document.querySelector(activeTab.dataset.chart) as HTMLElement;
+      await renderChart(chart, RANDOMS);
+      // If the user cannot see the results, inform them they need to scroll down.
+      if (tabContainer && !isAnyPartOfElementInViewport(tabContainer)) {
+        showChartsReadyAlert(chartsReadyAlert);
+      }
+      seedInput.dataset.lastSeed = seedInput.value;
+      numRandsToGen.dataset.lastCount = numRandsToGen.value;
     }
-    seedInput.dataset.lastSeed = seedInput.value;
-    numRandsToGen.dataset.lastCount = String(count);
+  } finally {
+    tabSpinner?.setAttribute("hidden", "");
+  }
+}
+
+function getSubmissionParameters(params: GetSubmissionParametersParams): SubmissionParameters | null {
+  let seed = BigInt(params.seedInput.value);
+  const count = BigInt(params.countInput.value);
+  const lastSeed = BigInt(params.seedInput.dataset.lastSeed || 0);
+  const lastCount = BigInt(params.countInput.dataset.lastCount || 0);
+
+  // Skip rendering if the inputs haven't changed and random seeding is disabled.
+  if (seed === lastSeed && count === lastCount) {
+    if (!useRandomSeed.checked) {
+      return null;
+    }
+
+    seed = getCryptoRandomBigInt();
+    seedInput.value = String(seed);
   }
 
-  tabSpinner?.setAttribute("hidden", ""); // Hide spinner
+  return { seed, count };
 }
 
 async function handleTabShown(tab: HTMLElement) {
@@ -103,8 +124,7 @@ async function handleTabShown(tab: HTMLElement) {
   }
 
   const root = document.querySelector(tab.dataset.chart) as HTMLElement;
-  // Force a resize. If someone clicks on a tab that they've already clicked
-  // on, it is possible the windows was resized in between those clicks.
+  // Force a resize in case the window was resized while the tab was inactive.
   if (root.hasChildNodes()) {
     Plots.resize(root);
     return;
@@ -152,20 +172,19 @@ function getCryptoRandomBigInt(): bigint {
   return crypto.getRandomValues(new BigUint64Array(1))[0];
 }
 
-async function generateRandomNumbersInChunks(params: {
-  seed: number | bigint;
-  count: number;
-  chunkSize: number;
-  outArray: number[];
-}) {
+async function generateRandomNumbersInChunks(params: GenerateRandomNumbersInChunksParams) {
   params.outArray.length = 0; // reset array
   const prng = new PRNG(BigInt(params.seed));
+  const chunkBig = BigInt(params.chunkSize);
 
-  for (let i = 0; i < params.count; i += params.chunkSize) {
-    const size = Math.min(params.chunkSize, params.count - i);
+  for (let i = 0n; i < params.count; i += chunkBig) {
+    const remaining = params.count - i;
+    const size = remaining < chunkBig ? Number(remaining) : params.chunkSize;
+
     for (let j = 0; j < size; j++) {
       params.outArray.push(prng.random());
     }
+
     await scheduler.yield();
   }
 }
@@ -200,4 +219,18 @@ function isAnyPartOfElementInViewport(element: HTMLElement): boolean {
     bounds.left < (window.innerWidth || document.documentElement.clientWidth) &&
     bounds.right > 0
   );
+}
+
+function validateInputFitsIn64Bits(inputElement: HTMLInputElement): boolean {
+  const max64BitValue = 18446744073709551615n;
+  const value = inputElement.value;
+
+  let valid = /^[0-9]+$/.test(value);
+  if (valid) {
+    const seed = BigInt(value);
+    valid = seed >= 1n && seed <= max64BitValue;
+  }
+
+  seedInput.setCustomValidity(valid ? "" : "invalid");
+  return valid;
 }

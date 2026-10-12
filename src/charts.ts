@@ -1,6 +1,6 @@
 import Plotly from "plotly.js-dist-min";
 
-export async function renderChart(root: HTMLElement, randoms: number[]): Promise<void> {
+export default async function (root: HTMLElement, randoms: number[]): Promise<void> {
   const dragmode = "pan";
   const responsive = true;
   const margin = {
