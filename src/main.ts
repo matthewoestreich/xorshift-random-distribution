@@ -3,6 +3,12 @@ import "scheduler-polyfill";
 import renderChart from "./charts.ts";
 import PRNG from "./chrome-math-random.ts";
 
+import type {
+  GenerateRandomNumbersInChunksParams,
+  GetSubmissionParametersParams,
+  SubmissionParameters,
+} from "./types.ts";
+
 const seedInput = document.getElementById("seed") as HTMLInputElement;
 const resultContainer = document.getElementById("result-container");
 const optionsForm = document.getElementById("options-form") as HTMLFormElement;
