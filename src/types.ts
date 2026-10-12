@@ -1,7 +1,7 @@
 interface GetSubmissionParametersParams {
   seedInput: HTMLInputElement;
   countInput: HTMLInputElement;
-  useRandomSeed: HTMLInputElement;
+  useRandomSeedCheckbox: HTMLInputElement;
 }
 
 interface GenerateRandomNumbersInChunksParams {

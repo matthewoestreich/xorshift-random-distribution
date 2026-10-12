@@ -61,7 +61,7 @@ async function handleFormSubmit(form: HTMLFormElement, event: Event) {
   const submission = getSubmissionParameters({
     seedInput,
     countInput: numRandsToGen,
-    useRandomSeed,
+    useRandomSeedCheckbox: useRandomSeed,
   });
 
   if (!submission) {
