@@ -190,8 +190,8 @@ async function generateRandomNumbersInChunks(params: GenerateRandomNumbersInChun
 }
 
 function normalizeRandomsCount(inputElement: HTMLInputElement) {
-  let n = Number(inputElement.value);
-  if (n % 2 !== 0) {
+  let n = BigInt(inputElement.value);
+  if (n % 2n !== 0n) {
     n++;
     inputElement.value = String(n);
   }
