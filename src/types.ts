@@ -1,17 +1,17 @@
-interface GetSubmissionParametersParams {
+export interface GetSubmissionParametersParams {
   seedInput: HTMLInputElement;
   countInput: HTMLInputElement;
   useRandomSeedCheckbox: HTMLInputElement;
 }
 
-interface GenerateRandomNumbersInChunksParams {
+export interface GenerateRandomNumbersInChunksParams {
   seed: bigint;
   count: bigint;
   chunkSize: number;
   outArray: number[];
 }
 
-type SubmissionParameters = {
+export type SubmissionParameters = {
   seed: bigint;
   count: bigint;
 };

@@ -23,6 +23,7 @@
     "printWidth": 110
   },
   "devDependencies": {
+    "@types/bootstrap": "^5.2.11",
     "@types/plotly.js": "^3.0.15",
     "prettier": "^3.9.10",
     "vite": "^8.3.4"

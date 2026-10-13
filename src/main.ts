@@ -23,22 +23,28 @@ const tabs = tabContainer.querySelectorAll('button[data-bs-toggle="tab"]') as No
 const RANDOMS: number[] = [];
 
 seedInput.addEventListener("input", () => {
-  validateInputFitsIn64Bits(seedInput);
+  if (optionsForm.classList.contains("has-been-submitted")) {
+    validateInputFitsIn64Bits(seedInput);
+  }
 });
 
 for (const input of requiredInputs) {
   input.addEventListener("input", () => {
     if (optionsForm.classList.contains("has-been-submitted")) {
-      isInputValid(input);
+      validateInput(input);
     }
   });
 }
 
 useRandomSeed.addEventListener("change", () => {
-  seedInput.disabled = useRandomSeed.checked;
-  if (useRandomSeed.checked && seedInput.value === "") {
+  if (useRandomSeed.checked) {
     seedInput.value = String(getCryptoRandomBigInt());
   }
+  if (optionsForm.classList.contains("has-been-submitted")) {
+    validateInputFitsIn64Bits(seedInput);
+    validateInput(seedInput);
+  }
+  seedInput.disabled = useRandomSeed.checked;
 });
 
 for (const tab of tabs) {
@@ -93,10 +99,7 @@ async function handleFormSubmit(form: HTMLFormElement, event: Event) {
     if (activeTab && activeTab.dataset.chart) {
       const chart = document.querySelector(activeTab.dataset.chart) as HTMLElement;
       await renderChart(chart, RANDOMS);
-      // If the user cannot see the results, inform them they need to scroll down.
-      if (tabContainer && !isAnyPartOfElementInViewport(tabContainer)) {
-        showChartsReadyAlert(chartsReadyAlert);
-      }
+      showChartsReadyToast(chartsReadyAlert);
       seedInput.dataset.lastSeed = seedInput.value;
       numRandsToGen.dataset.lastCount = numRandsToGen.value;
     }
@@ -143,7 +146,7 @@ async function handleTabShown(tab: HTMLElement) {
   spinner?.setAttribute("hidden", "");
 }
 
-function isInputValid(input: HTMLInputElement): boolean {
+function validateInput(input: HTMLInputElement): boolean {
   let isValid = true;
   if (!input.checkValidity()) {
     isValid = false;
@@ -160,7 +163,7 @@ function isFormRequiredInputsValid(form: HTMLFormElement): boolean {
   let isValid = true;
   const inputs = form.querySelectorAll("input[required]") as NodeListOf<HTMLInputElement>;
   for (const input of inputs) {
-    if (!isInputValid(input)) {
+    if (!validateInput(input)) {
       isValid = false;
     }
   }
@@ -209,22 +212,12 @@ function clearRenderedCharts(charts: NodeListOf<HTMLElement>) {
   }
 }
 
-function showChartsReadyAlert(chartsReadyAlertEl: HTMLDivElement): void {
+function showChartsReadyToast(chartsReadyAlertEl: HTMLDivElement): void {
   if (Boolean(chartsReadyAlertEl.dataset.hasShown)) {
     return;
   }
-  chartsReadyAlertEl.removeAttribute("hidden");
+  window.bootstrap.Toast.getOrCreateInstance(chartsReadyAlertEl).show();
   chartsReadyAlertEl.dataset.hasShown = "true";
-}
-
-function isAnyPartOfElementInViewport(element: HTMLElement): boolean {
-  const bounds = element.getBoundingClientRect();
-  return (
-    bounds.top < (window.innerHeight || document.documentElement.clientHeight) &&
-    bounds.bottom > 0 &&
-    bounds.left < (window.innerWidth || document.documentElement.clientWidth) &&
-    bounds.right > 0
-  );
 }
 
 function validateInputFitsIn64Bits(inputElement: HTMLInputElement): boolean {
@@ -237,6 +230,6 @@ function validateInputFitsIn64Bits(inputElement: HTMLInputElement): boolean {
     valid = seed >= 1n && seed <= max64BitValue;
   }
 
-  seedInput.setCustomValidity(valid ? "" : "invalid");
+  inputElement.setCustomValidity(valid ? "" : "invalid");
   return valid;
 }
