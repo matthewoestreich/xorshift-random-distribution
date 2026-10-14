@@ -186,8 +186,8 @@ async function generateRandomNumbersInChunks(
   if (params.count < 0n || params.count > BigInt(Number.MAX_SAFE_INTEGER)) {
     throw new RangeError("Invalid array length");
   }
-  const outArray = new Float64Array(Number(params.count));
 
+  const outArray = new Float64Array(Number(params.count));
   const prng = new PRNG(BigInt(params.seed));
   const chunkBig = BigInt(params.chunkSize);
 
