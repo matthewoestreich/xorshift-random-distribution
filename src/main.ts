@@ -20,7 +20,7 @@ const charts = document.querySelectorAll(".chart-container") as NodeListOf<HTMLE
 const requiredInputs = optionsForm.querySelectorAll("input[required]") as NodeListOf<HTMLInputElement>;
 const tabs = tabContainer.querySelectorAll('button[data-bs-toggle="tab"]') as NodeListOf<HTMLElement>;
 
-const RANDOMS: number[] = [];
+window.randoms = new Float64Array(0);
 
 seedInput.addEventListener("input", () => {
   if (optionsForm.classList.contains("has-been-submitted")) {
@@ -89,16 +89,15 @@ async function handleFormSubmit(form: HTMLFormElement, event: Event) {
   resultContainer?.removeAttribute("hidden");
 
   try {
-    await generateRandomNumbersInChunks({
+    window.randoms = await generateRandomNumbersInChunks({
       seed: submission.seed,
       count: submission.count,
       chunkSize: 10_000,
-      outArray: RANDOMS,
     });
 
     if (activeTab && activeTab.dataset.chart) {
       const chart = document.querySelector(activeTab.dataset.chart) as HTMLElement;
-      await renderChart(chart, RANDOMS);
+      await renderChart(chart, window.randoms);
       showChartsReadyToast(chartsReadyAlert);
       seedInput.dataset.lastSeed = seedInput.value;
       numRandsToGen.dataset.lastCount = numRandsToGen.value;
@@ -142,7 +141,7 @@ async function handleTabShown(tab: HTMLElement) {
   const spinner = getTabSpinner(tab);
   spinner?.removeAttribute("hidden");
   await scheduler.yield();
-  await renderChart(root, RANDOMS);
+  await renderChart(root, window.randoms);
   spinner?.setAttribute("hidden", "");
 }
 
@@ -181,21 +180,30 @@ function getCryptoRandomBigInt(): bigint {
   return crypto.getRandomValues(new BigUint64Array(1))[0];
 }
 
-async function generateRandomNumbersInChunks(params: GenerateRandomNumbersInChunksParams) {
-  params.outArray.length = 0; // reset array
+async function generateRandomNumbersInChunks(
+  params: GenerateRandomNumbersInChunksParams,
+): Promise<Float64Array> {
+  if (params.count < 0n || params.count > BigInt(Number.MAX_SAFE_INTEGER)) {
+    throw new RangeError("Invalid array length");
+  }
+  const outArray = new Float64Array(Number(params.count));
+
   const prng = new PRNG(BigInt(params.seed));
   const chunkBig = BigInt(params.chunkSize);
 
   for (let i = 0n; i < params.count; i += chunkBig) {
     const remaining = params.count - i;
     const size = remaining < chunkBig ? Number(remaining) : params.chunkSize;
+    const iAsNumber = Number(i);
 
     for (let j = 0; j < size; j++) {
-      params.outArray.push(prng.random());
+      outArray[iAsNumber + j] = prng.random();
     }
 
     await scheduler.yield();
   }
+
+  return outArray;
 }
 
 function normalizeRandomsCount(inputElement: HTMLInputElement) {

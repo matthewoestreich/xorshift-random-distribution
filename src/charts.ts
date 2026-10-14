@@ -1,6 +1,6 @@
 import Plotly from "plotly.js-dist-min";
 
-export default async function (root: HTMLElement, randoms: number[]): Promise<void> {
+export default async function (root: HTMLElement, randoms: Float64Array): Promise<void> {
   const dragmode = "pan";
   const responsive = true;
   const margin = {
@@ -25,7 +25,7 @@ export default async function (root: HTMLElement, randoms: number[]): Promise<vo
 
 async function renderHeatmap(
   root: HTMLElement,
-  randoms: number[],
+  randoms: Float64Array,
   dragmode: NonNullable<Plotly.Layout["dragmode"]>,
   margin: NonNullable<Plotly.Layout["margin"]>,
   responsive: boolean | undefined,
@@ -90,7 +90,7 @@ async function renderHeatmap(
 
 async function renderHistogram(
   root: HTMLElement,
-  randoms: number[],
+  randoms: Float64Array,
   dragmode: NonNullable<Plotly.Layout["dragmode"]>,
   margin: NonNullable<Plotly.Layout["margin"]>,
   responsive: boolean | undefined,
@@ -158,7 +158,7 @@ async function renderHistogram(
 
 async function renderCumulative(
   root: HTMLElement,
-  randoms: number[],
+  randoms: Float64Array,
   dragmode: NonNullable<Plotly.Layout["dragmode"]>,
   margin: NonNullable<Plotly.Layout["margin"]>,
   responsive: boolean | undefined,

@@ -1,3 +1,9 @@
+declare global {
+  interface Window {
+    randoms: Float64Array;
+  }
+}
+
 export interface GetSubmissionParametersParams {
   seedInput: HTMLInputElement;
   countInput: HTMLInputElement;
@@ -8,7 +14,6 @@ export interface GenerateRandomNumbersInChunksParams {
   seed: bigint;
   count: bigint;
   chunkSize: number;
-  outArray: number[];
 }
 
 export type SubmissionParameters = {
